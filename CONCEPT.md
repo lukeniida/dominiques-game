@@ -114,3 +114,14 @@ The game is a congratulations on her graduation.
 - Visual bar: HIGH. "Modded Stardew Valley" — beautiful light, shading.
 - Plan approved. Build order: engine + sprite gallery first, Luke reviews
   likenesses on localhost, then the two areas.
+
+## Draft 6 — V1 SCOPE LOCK (June 11)
+- V1 = MANSION ONLY + portal finale. Graduation area moved to v2 list.
+- Game flow: spawn on mansion grounds → Luke greets, explains the five
+  sparkling treasures → explore grounds + 5 rooms → collect items →
+  portal at the cliff over Lake Michigan → finale sign.
+- Peanut butter table gag RELOCATED to the mansion grounds (roped-off
+  picnic table). Gag intact: shake, red flash, Dad sprints in.
+- Ruthvik gets a basketball hoop on the grounds (podcast canon).
+- Dad lives on the couch in his room (couch + Dad are one sprite).
+- V2 list: graduation ceremony area, sound/music, more inside jokes.
