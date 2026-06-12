@@ -95,3 +95,22 @@ The game is a congratulations on her graduation.
 ## New from photos
 - The real Match Day sign — "I MATCHED! in Anesthesiology at TEXAS TECH" —
   recreated as an examinable at graduation. Explains the Lubbock move.
+
+## Draft 5 changes (build-approved)
+- LUBBOCK CUT for v1. Two areas: Graduation + Mansion. Ruthvik appears at
+  graduation AND hangs out at the mansion (not in the closet).
+- Ruthvik details: loves basketball, has a basketball podcast, super into
+  sports, very level-headed, great guy.
+- THE FIVE SPARKLING ITEMS (one per person, portal requires all):
+  1. Lumpy — Henry's leopard gecko. Once picked up, he RIDES ON HER SHOULDER
+     for the rest of the game.
+  2. Luke's poetry notebook (Luke's room)
+  3. Mom's kintsugi heart — big metal heart, two halves mended with gold
+     running down the middle (she makes these; in her art studio)
+  4. Dad's framed photo of a locked back door (hangs on his bedroom wall —
+     inside joke: Luke locked him out; he slept outside that summer)
+  5. Dominique's graduation diploma (in her closet)
+- Portal location: the cliff's edge over Lake Michigan, at sunset.
+- Visual bar: HIGH. "Modded Stardew Valley" — beautiful light, shading.
+- Plan approved. Build order: engine + sprite gallery first, Luke reviews
+  likenesses on localhost, then the two areas.
