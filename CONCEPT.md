@@ -88,8 +88,9 @@ The game is a congratulations on her graduation.
 - **Dad** — salt-and-pepper combed hair, square face, big grin, navy blazer
   over pink button-down, khakis — plus (per Luke) thick-rimmed circular
   glasses slightly too small, and running shoes in his room.
-- **Henry** (no photo) — very tall, long flowing dark hair, rising-sun fox
-  tattoo, dark clothes, samurai energy.
+- **Henry** — very tall, long flowing dark hair (chin-to-shoulder length,
+  middle part), half Asian, black short-sleeve button shirt, rising-sun fox
+  tattoo, samurai energy, effortlessly cool.
 
 ## New from photos
 - The real Match Day sign — "I MATCHED! in Anesthesiology at TEXAS TECH" —
