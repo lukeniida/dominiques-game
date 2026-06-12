@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>A game Luke made while Dominique was home</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="game" width="960" height="624"></canvas>
+  <div id="dialog" class="hidden">
+    <div id="dialog-name"></div>
+    <div id="dialog-text"></div>
+    <div id="dialog-hint">▼ SPACE</div>
+  </div>
+  <div id="title-screen">
+    <div id="title-card">
+      <h1>A game Luke made<br>while Dominique was home</h1>
+      <p class="subtitle">— sprite gallery preview —</p>
+      <p class="press">press SPACE to start</p>
+    </div>
+  </div>
+  <div id="error-banner" class="hidden"></div>
+</div>
+<script>
+window.onerror = function (msg, src, line) {
+  var b = document.getElementById('error-banner');
+  b.textContent = 'JS ERROR: ' + msg + ' (' + (src||'').split('/').pop() + ':' + line + ')';
+  b.classList.remove('hidden');
+};
+</script>
+<script src="js/sprites.js"></script>
+<script src="js/maps.js"></script>
+<script src="js/engine.js"></script>
+</body>
+</html>
