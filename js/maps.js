@@ -505,28 +505,28 @@ const MAPS = {
     theme: "closet",
     playerStart: { x: 1, y: 4, facing: "right" },
     tiles: [
-      "##########",
-      "#rrrrrrrr#",
-      "#rrrrrrrr#",
-      "#rrrrrrrr#",
-      "drrrrrrrr#",
-      "#rrrrrrrr#",
-      "#rrrrrrrr#",
-      "##########",
+      "######",
+      "#rrrr#",
+      "#rrrr#",
+      "#rrrr#",
+      "drrrr#",
+      "#rrrr#",
+      "######",
     ],
     warps: [
       { x: 0, y: 4, to: "hallway", tx: 20, ty: 5, facing: "left" },
     ],
     entities: [
       {
-        x: 7, y: 1, sprite: "coatrack", name: "Coat Rack",
+        x: 4, y: 1, sprite: "coatrack", name: "Coat Rack",
         lines: [
           "A coat rack. One (1) coat.",
           "The hanger situation is dire.",
+          "(It is also touching the opposite wall.)",
         ],
       },
       {
-        x: 3, y: 1, sprite: "note", name: "A Sign",
+        x: 1, y: 1, sprite: "note", name: "A Sign",
         lines: [
           "'DOMINIQUE'S ROOM.'",
           "It's a closet. It has always been\na closet.",
@@ -534,13 +534,14 @@ const MAPS = {
         ],
       },
       {
-        x: 5, y: 2, sprite: "shoespair", name: "Shoes",
+        x: 2, y: 2, sprite: "shoespair", name: "Shoes",
         lines: [
           "One pair of shoes, perfectly centered,\nlike a museum piece.",
+          "There is no room for a second pair.",
         ],
       },
       {
-        x: 4, y: 4, sprite: "diploma", name: "The Diploma",
+        x: 3, y: 3, sprite: "diploma", name: "The Diploma",
         itemId: "diploma",
         lines: [
           "Wait. On a tiny pedestal, under a\nsingle perfect spotlight:",

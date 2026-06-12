@@ -383,7 +383,7 @@
   function updatePlayer() {
     if (dialog || !started || runner) return;
     if (player.moving) {
-      player.prog += 0.14;
+      player.prog += 0.095;
       player.animTick++;
       if (player.animTick % 8 === 0) player.step = 1 - player.step;
       if (player.prog >= 1) {
@@ -417,7 +417,7 @@
     for (const e of entities) {
       if (!e.wander) continue;
       if (e.moving) {
-        e.prog += 0.06;
+        e.prog += 0.045;
         if (e.prog >= 1) { e.prog = 0; e.moving = false; e.px = e.x * TS; e.py = e.y * TS; }
         else {
           const [dx, dy] = DELTA[e.dir];
