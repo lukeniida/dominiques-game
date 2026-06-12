@@ -390,15 +390,29 @@ Object.assign(SPRITES, {
 
   // ---------- grounds ----------
   memorial: {
-    legend: { s: "#9a9aa6", S: "#7a7a88", f: "#f2c0d8", y: "#f0e060", g: "#3f8a1e" },
+    // a proper monument: rounded headstone, inset panel with engraved
+    // bunny ears, pedestal, flowers at the base (scaled up via big:)
+    legend: {
+      s: "#a2a2ae", S: "#7a7a88", d: "#686876", e: "#d8d8e2",
+      p: "#8a8a96", P: "#6e6e7c", f: "#f2c0d8", y: "#f0e060", g: "#3f8a1e",
+    },
     down: [
-      "....ssss......",
-      "...ssssss.....",
-      "...sSSSSs.....",
-      "...sSSSSs.....",
-      "...ssssss.....",
-      ".f.ssssss..y..",
-      "gfg.g..g..gyg.",
+      "....ssss....",
+      "..ssssssss..",
+      ".ssssssssss.",
+      ".sSSSSSSSSs.",
+      ".sSddddddSs.",
+      ".sSdeddedSs.",
+      ".sSdeddedSs.",
+      ".sSdeddedSs.",
+      ".sSdeeeedSs.",
+      ".sSddddddSs.",
+      ".sSdeeeedSs.",
+      ".sSddddddSs.",
+      ".sSSSSSSSSs.",
+      "pppppppppppp",
+      "PPPPPPPPPPPP",
+      "fy.g.gg.g.yf",
     ],
   },
   towel: {

@@ -52,5 +52,8 @@ cp "$GA/Flower_Grass_8_Anim.png" assets/exterior/flower-3-anim.png
 # ── path detail ──
 cp "$P/Tiles/Grass/Path_Decoration.png" assets/exterior/path-decor.png
 
+# ── ambient life ──
+cp "$P/Animals/Butterfly/Butterfly.png" assets/exterior/butterfly.png
+
 echo "assets/ restored:"
 ls assets/exterior

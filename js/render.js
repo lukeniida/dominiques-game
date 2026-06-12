@@ -51,6 +51,7 @@
     waterlog: "waterlog-anim.png",
     tallgrass1: "tallgrass-1-anim.png", tallgrass2: "tallgrass-2-anim.png",
     flower1: "flower-1-anim.png", flower2: "flower-2-anim.png", flower3: "flower-3-anim.png",
+    butterfly: "butterfly.png",
   }).map(([key, file]) => new Promise((res, rej) => {
     const i = new Image();
     i.onload = () => res(IMG[key] = i);
@@ -141,6 +142,16 @@
   };
   const FISH_TEX = sliceFrames(IMG.fishAnim, 16, 16, 16);
   const SMOKE_TEX = sliceFrames(IMG.chimneySmoke, 32, 32, 5);
+  // butterfly.png: 8×8 sprites, 2 wing frames per color row
+  const BUTTERFLY_TEX = Array.from({ length: 6 }, (_, row) =>
+    [0, 1].map(col => PIXI.Texture.from(makeCanvas(8 * SCALE, 8 * SCALE, (g) => {
+      g.imageSmoothingEnabled = false;
+      g.drawImage(IMG.butterfly, col * 8, row * 8, 8, 8, 0, 0, 8 * SCALE, 8 * SCALE);
+    }))));
+  // gentle, distinct paces — Luke's note: the lake shouldn't look caffeinated
+  const DECOR_SPEED = {
+    waterlog: 34, lilyGreen: 26, lilyRed: 26, lilyPurple: 26, cattail: 22,
+  };
   const MANSION_TEX = PIXI.Texture.from(makeCanvas(240 * SCALE, 192 * SCALE, (g) => {
     g.imageSmoothingEnabled = false;
     g.drawImage(IMG.mansion, 0, 0, 240 * SCALE, 192 * SCALE);
@@ -266,8 +277,9 @@
     const w = G.mapW * TS, h = G.mapH * TS;
     const water = [];   // {x, y, spec} → animated water sprites
     const spawns = [];  // {kind, px, py, ph} → animated decor sprites
-    const trees = [];   // {type, cx, baseY, flip, ph} → swaying tree sprites
+    const trees = [];   // {type, cx, baseY, flip, ph} → tree sprites
     const openWater = []; // candidate cells for the jumping fish
+    let mansionAt = null; // top-left B cell — the building art anchors here
     // off-map counts as water so the lake bleeds past the map edge
     const isWater = (x, y) =>
       (x < 0 || y < 0 || x >= G.mapW || y >= G.mapH) ? true : map.tiles[y][x] === "w";
@@ -286,6 +298,7 @@
           // sprite all have transparent fringes
           ctx.drawImage(IMG.grass, sx, sy, TS, TS);
 
+          if (ch === "B" && !mansionAt) mansionAt = { x, y };
           if (ch === "w") {
             water.push({ x, y, spec: quadSpec(isWater, x, y) });
             const open = isWater(x - 1, y) && isWater(x + 1, y) && isWater(x, y - 1) && isWater(x, y + 1)
@@ -315,7 +328,7 @@
           } else if (ch === "g") {
             // sparse decoration keeps plain grass from feeling flat
             if (hsh < 0.10) blitCell(ctx, IMG.decor, ...TUFT_CELLS[((hsh * 30) | 0) % 3], sx, sy);
-            else if (hsh < 0.14) spawns.push({ kind: ["flower1", "flower2", "flower3"][(hsh * 53 | 0) % 3], px: sx, py: sy, ph });
+            else if (hsh < 0.19) spawns.push({ kind: ["flower1", "flower2", "flower3"][(hsh * 53 | 0) % 3], px: sx, py: sy, ph });
             else if (hsh > 0.985) blitCell(ctx, IMG.decor, ...ROCK_CELL, sx, sy);
             else if (hsh > 0.97) blitCell(ctx, IMG.decor, ...SPROUT_CELLS[0], sx, sy);
           }
@@ -355,7 +368,7 @@
         });
       }
 
-    return { ground, water, spawns, trees, openWater };
+    return { ground, water, spawns, trees, openWater, mansionAt };
   }
 
   function buildInteriorGround(map, mapName) {
@@ -392,7 +405,7 @@
         }
       }
     });
-    return { ground, water: [], spawns: [], trees: [], openWater: [] };
+    return { ground, water: [], spawns: [], trees: [], openWater: [], mansionAt: null };
   }
 
   // ════════════════════ character textures ════════════════════
@@ -501,9 +514,10 @@
   glowSprite.visible = false;
   const entLayer = new PIXI.Container();     // trees, mansion, characters — depth-sorted
   entLayer.sortableChildren = true;
+  const butterflyLayer = new PIXI.Container();
   const fxG = new PIXI.Graphics();
   const labelLayer = new PIXI.Container();
-  world.addChild(groundSprite, waterLayer, decorLayer, glowSprite, entLayer, fxG, labelLayer);
+  world.addChild(groundSprite, waterLayer, decorLayer, glowSprite, entLayer, butterflyLayer, fxG, labelLayer);
 
   const lightSprite = new PIXI.Sprite();
   const flashG = new PIXI.Graphics();
@@ -526,7 +540,7 @@
 
   function rebuildMap() {
     lastMap = G.mapName;
-    const { ground, water, spawns, trees, openWater } = buildGround(G.map, G.mapName);
+    const { ground, water, spawns, trees, openWater, mansionAt } = buildGround(G.map, G.mapName);
     groundSprite.texture = PIXI.Texture.from(ground);
 
     // animated water, one sprite per cell — all cells share the same
@@ -557,6 +571,7 @@
       const sp = new PIXI.Sprite(DECOR_TEX[kind][0]);
       sp._frames = DECOR_TEX[kind];
       sp._ph = ph;
+      sp._spd = DECOR_SPEED[kind] || 16;
       sp.position.set(px, py);
       decorLayer.addChild(sp);
       return sp;
@@ -572,17 +587,18 @@
       return sp;
     });
     smokeSprites = [];
-    if (G.map.theme === "exterior") {
+    if (mansionAt) {
+      const mx = mansionAt.x * TS, my = mansionAt.y * TS;
       const m = new PIXI.Sprite(MANSION_TEX);
-      m.position.set(11 * TS, 1 * TS);
-      m.zIndex = 11 * TS; // behind anything walking on the doormat row
+      m.position.set(mx, my);
+      m.zIndex = my + 10 * TS; // behind anything walking on the doormat row
       sceneSprites.push(m);
-      // chimney smoke, one plume per chimney
-      for (const [px, py, ph] of [[588, 130, 0], [845, 112, 3]]) {
+      // chimney smoke, one plume per chimney (offsets within the Inn art)
+      for (const [ox, oy, ph] of [[60, 82, 0], [317, 64, 3]]) {
         const sp = new PIXI.Sprite(SMOKE_TEX[0]);
         sp.anchor.set(0.5, 1);
-        sp.position.set(px, py);
-        sp.zIndex = 11 * TS + 1;
+        sp.position.set(mx + ox, my + oy);
+        sp.zIndex = m.zIndex + 1;
         sp._ph = ph;
         smokeSprites.push(sp);
         sceneSprites.push(sp);
@@ -590,14 +606,19 @@
     }
 
     lightSprite.texture = PIXI.Texture.from(buildLight(G.map.theme));
+    butterflyLayer.removeChildren();
     butterflies = [];
     if (G.map.theme === "exterior") {
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 14; i++) {
+        const sp = new PIXI.Sprite(BUTTERFLY_TEX[i % 6][0]);
+        sp.anchor.set(0.5);
+        butterflyLayer.addChild(sp);
         butterflies.push({
+          sp, color: i % 6,
           x: (2 + Math.random() * (G.mapW - 8)) * TS,
           y: (2 + Math.random() * (G.mapH - 4)) * TS,
           a: Math.random() * Math.PI * 2,
-          hue: Math.random() < 0.5 ? 0xf5f2ec : 0xf0a64a,
+          ph: (Math.random() * 2) | 0,
         });
       }
     }
@@ -613,6 +634,7 @@
     for (const sp of sceneSprites) entLayer.addChild(sp);
     for (const e of G.entities) {
       const c = makeCharacter(e.sprite);
+      if (e.big) c.scale.set(e.big); // landmarks like the memorial and the hoop
       placeChar(c, e.px, e.py);
       entLayer.addChild(c);
       entitySprites.push({ e, c });
@@ -713,11 +735,13 @@
 
     // ── ambient animation clocks ──
     // water: all cells share one frame so edges tile seamlessly
-    const wf = ((G.tick / 9) | 0) % WATER_FRAMES;
+    const wf = ((G.tick / 12) | 0) % WATER_FRAMES;
     for (const sp of waterSprites) sp.texture = sp._frames[wf];
-    // decor sways with a per-sprite phase so the meadow doesn't march in step
-    const df = (G.tick / 8) | 0;
-    for (const sp of decorSprites) sp.texture = sp._frames[(df + sp._ph) % sp._frames.length];
+    // decor sways at its own kind's pace, phased per sprite so the
+    // meadow doesn't march in step
+    for (const sp of decorSprites) {
+      sp.texture = sp._frames[(((G.tick / sp._spd) | 0) + sp._ph) % sp._frames.length];
+    }
     const sf = (G.tick / 12) | 0;
     for (const sp of smokeSprites) sp.texture = SMOKE_TEX[(sf + sp._ph) % SMOKE_TEX.length];
     // the fish: surfaces somewhere in open water every few seconds
@@ -779,14 +803,9 @@
       b.a += 0.03;
       b.x += Math.cos(b.a) * 0.7;
       b.y += Math.sin(b.a * 1.3) * 0.5;
-      const flap = ((G.tick / 6) | 0) % 2 === 0;
-      if (flap) {
-        fxG.rect(b.x - 3, b.y, 3, 3).fill(b.hue);
-        fxG.rect(b.x + 3, b.y, 3, 3).fill(b.hue);
-      } else {
-        fxG.rect(b.x, b.y - 3, 3, 3).fill(b.hue);
-      }
-      fxG.rect(b.x, b.y, 3, 3).fill(b.hue);
+      b.sp.position.set(b.x, b.y);
+      b.sp.texture = BUTTERFLY_TEX[b.color][(((G.tick / 7) | 0) + b.ph) % 2];
+      b.sp.scale.x = Math.cos(b.a) < 0 ? -1 : 1; // face the way it drifts
     }
 
     // red flash

@@ -55,7 +55,7 @@
         timer: G.tick + 60 + ((hash(e.x, e.y) * 200) | 0), dir: "down",
       }));
     if (G.state.flags.pbDone && name === "exterior") {
-      G.entities.push(makePatrolDad(26, 26));
+      G.entities.push(makePatrolDad(26, 28));
     }
     player.x = x; player.y = y;
     player.px = x * TS; player.py = y * TS;
