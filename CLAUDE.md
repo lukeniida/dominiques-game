@@ -33,9 +33,14 @@ Before Luke leaves a session, do a walkthrough covering:
   Step 4 done: interiors rebuilt with LimeZu Room Builder walls/floors
   per room (ROOM_STYLE in render.js) + furniture-sheet sprites for
   generic pieces (FURN table maps entity sprite names to sheet rects);
-  personality props stay hand-drawn. NEXT: Step 5, family sprites v2
-  (LimeZu animated character bases + likenesses, Luke approves each).
-  Open decision for Luke: dock vs grass point at the portal.
+  personality props stay hand-drawn. Luke's revision: interiors halved
+  (hallway 16×9, rooms 10×8, 2-course walls), herringbone hallway-only
+  with neutral gray room floors, props scaled up via big:. Step 6
+  first cut done: per-theme ColorMatrix grading, additive glow sources
+  (GLOW_SOURCES), window light pools, dust motes.
+  NEXT: Step 5, family sprites v2 (LimeZu animated character bases +
+  likenesses, Luke approves each). Open decisions for Luke: dock vs
+  grass point at the portal; bloom/dusk mode as extra light polish.
 - GitHub: private repo lukeiida/dominiques-game, all work pushed
 - Vercel: deliberately NOT deployed yet — Luke will say when
 

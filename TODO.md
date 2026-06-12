@@ -47,8 +47,10 @@ NOT redistributable — gitignored):
       dad-on-couch…) stay hand-drawn on purpose — they're the jokes.
 - [ ] 5. **Family sprites v2** — custom heads/hair/outfits on LimeZu
       animated bases: walk cycles + likenesses. Luke approves each.
-- [ ] 6. **Light & shader pass** — color grading, light maps (candle
-      flicker, monitor glow, window pools), bloom, dust motes
+- [x] 6. **Light & shader pass** (first cut) — per-theme color grading,
+      additive light sources (candle flicker, battlestation glow, red
+      lamp, terrarium heat lamp, window pools), dust motes. Remaining
+      polish candidates: bloom on sparkles, exterior night/dusk mode.
 - [ ] 7. **Full playtest + dialogue polish** — Luke plays start→finish
 - [ ] 8. **Ship** — Vercel deploy when Luke says go
 

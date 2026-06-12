@@ -309,15 +309,17 @@
   }
 
   // Per-room looks from the LimeZu Room Builder sheet: wallRow is the
-  // top row of a 2-row wall color set (we use its trim+panel row);
-  // floor is a [cx, cy, w, h] tile region we repeat across the room.
+  // top row of a 2-row wall color set (trim course on top, baseboard
+  // course everywhere a wall meets the room); floor is a [cx, cy, w, h]
+  // tile region we repeat. Herringbone is hallway-only by request —
+  // rooms get a neutral floor.
   const ROOM_STYLE = {
     hallway:   { wallRow: 19, floor: [11, 13, 3, 2] },  // beige + herringbone parquet
-    lukeroom:  { wallRow: 7,  floor: [11, 13, 3, 2] },  // warm yellow
-    momroom:   { wallRow: 9,  floor: [11, 9, 3, 2] },   // mint + teal diamond tile
-    dadroom:   { wallRow: 17, floor: [11, 13, 3, 2] },  // slate blue
-    henryroom: { wallRow: 13, floor: [14, 11, 3, 2] },  // dark wood + gray stone
-    closet:    { wallRow: 5,  floor: [11, 13, 3, 2] },  // salmon
+    lukeroom:  { wallRow: 7,  floor: [14, 9, 3, 2] },   // warm yellow walls, neutral floor
+    momroom:   { wallRow: 9,  floor: [14, 9, 3, 2] },   // mint walls
+    dadroom:   { wallRow: 17, floor: [14, 9, 3, 2] },   // slate blue walls
+    henryroom: { wallRow: 13, floor: [14, 11, 3, 2] },  // dark wood + darker stone
+    closet:    { wallRow: 19, floor: [14, 9, 3, 2] },   // beige, like the hallway it hides in
   };
 
   function buildInteriorGround(map, mapName) {
@@ -332,7 +334,10 @@
           const sx = x * TS, sy = y * TS;
 
           if (ch === "#" || ch === "K" || ch === "X") {
-            blitCell(ctx, IMG.roomBuilder, x % 3, style.wallRow, sx, sy);
+            // top map row shows the wall's trim course; every other
+            // wall cell gets the baseboard course so side and bottom
+            // walls read as solid paneling
+            blitCell(ctx, IMG.roomBuilder, x % 3, style.wallRow + (y === 0 ? 0 : 1), sx, sy);
             if (ch === "X") blitCell(ctx, IMG.furniture, 9, 24, sx, sy); // window on the wall
             continue;
           }
@@ -348,7 +353,7 @@
       }
       // the great hallway keeps its big rug — LimeZu's red & gold one
       if (mapName === "hallway") {
-        ctx.drawImage(IMG.furniture, 7 * T16, 15 * T16, 4 * T16, 3 * T16, 9 * TS, 4 * TS, 4 * TS, 3 * TS);
+        ctx.drawImage(IMG.furniture, 7 * T16, 15 * T16, 4 * T16, 3 * T16, 6 * TS, 3 * TS, 4 * TS, 3 * TS);
       }
     });
     return { ground, water: [], spawns: [], trees: [], openWater: [], mansionAt: null };
@@ -377,6 +382,34 @@
       g.drawImage(IMG.furniture, cx * T16, cy * T16, fw * T16, fh * T16, 0, 0, fw * TS, fh * TS);
     })));
   }
+
+  // ════════════════════ light sources ════════════════════
+  // Soft additive glows that sit over the scene. Each entity sprite
+  // listed here emits light; 'flicker' jitters like flame, 'pulse'
+  // breathes slowly, 'steady' just glows.
+  const glowTexCache = {};
+  function glowTex(color, r) {
+    const key = color + "_" + r;
+    if (glowTexCache[key]) return glowTexCache[key];
+    const hex = "#" + color.toString(16).padStart(6, "0");
+    return (glowTexCache[key] = PIXI.Texture.from(makeCanvas(r * 2, r * 2, (g) => {
+      const grad = g.createRadialGradient(r, r, 2, r, r, r);
+      grad.addColorStop(0, hex + "ff");
+      grad.addColorStop(0.55, hex + "55");
+      grad.addColorStop(1, hex + "00");
+      g.fillStyle = grad;
+      g.fillRect(0, 0, r * 2, r * 2);
+    })));
+  }
+  const GLOW_SOURCES = {
+    candles:      { color: 0xffc270, r: 80,  alpha: 0.30, mode: "flicker" },
+    altar:        { color: 0xffc270, r: 55,  alpha: 0.22, mode: "flicker" },
+    computerdesk: { color: 0x86c8ff, r: 50,  alpha: 0.18, mode: "pulse" },
+    gamingrig:    { color: 0x86c8ff, r: 115, alpha: 0.42, mode: "pulse" },
+    terrarium:    { color: 0xffa860, r: 60,  alpha: 0.28, mode: "steady" },
+    redlight:     { color: 0xff7060, r: 90,  alpha: 0.30, mode: "pulse" },
+    espresso:     { color: 0xffc270, r: 40,  alpha: 0.15, mode: "steady" },
+  };
 
   // ════════════════════ character textures ════════════════════
   const texCache = {};
@@ -451,7 +484,7 @@
         for (let i = 0; i < 4; i++) {
           const bx = 120 + i * 180;
           const grad = ctx.createLinearGradient(bx, 0, bx + 140, VIEW_H);
-          grad.addColorStop(0, "rgba(255,236,170,0.16)");
+          grad.addColorStop(0, "rgba(255,236,170,0.09)");
           grad.addColorStop(1, "rgba(255,236,170,0)");
           ctx.fillStyle = grad;
           ctx.beginPath();
@@ -459,7 +492,7 @@
           ctx.lineTo(bx + 210, VIEW_H); ctx.lineTo(bx + 80, VIEW_H);
           ctx.closePath(); ctx.fill();
         }
-        ctx.fillStyle = "rgba(255,225,150,0.06)";
+        ctx.fillStyle = "rgba(255,225,150,0.04)";
         ctx.fillRect(0, 0, VIEW_W, VIEW_H);
       } else if (theme === "dojo") {
         ctx.fillStyle = "rgba(8,8,38,0.32)";
@@ -494,10 +527,15 @@
   glowSprite.visible = false;
   const entLayer = new PIXI.Container();     // trees, mansion, characters — depth-sorted
   entLayer.sortableChildren = true;
+  const lightFx = new PIXI.Container();      // additive glows over the scene
   const butterflyLayer = new PIXI.Container();
   const fxG = new PIXI.Graphics();
   const labelLayer = new PIXI.Container();
-  world.addChild(groundSprite, waterLayer, decorLayer, glowSprite, entLayer, butterflyLayer, fxG, labelLayer);
+  world.addChild(groundSprite, waterLayer, decorLayer, glowSprite, entLayer, lightFx, butterflyLayer, fxG, labelLayer);
+
+  // gentle per-theme color grading over the whole world
+  const grade = new PIXI.ColorMatrixFilter();
+  world.filters = [grade];
 
   const lightSprite = new PIXI.Sprite();
   const flashG = new PIXI.Graphics();
@@ -516,6 +554,7 @@
   let waterSprites = [], decorSprites = [], sceneSprites = [], smokeSprites = [];
   let entitySprites = [], labels = [], butterflies = [];
   let openWaterCells = [], fish = null;
+  let glowFx = [], motes = [];
   let runnerC = null;
 
   function rebuildMap() {
@@ -586,6 +625,57 @@
     }
 
     lightSprite.texture = PIXI.Texture.from(buildLight(G.map.theme));
+
+    // ── lighting pass: glow sources, window pools, motes, grading ──
+    lightFx.removeChildren();
+    glowFx = [];
+    for (const e of G.entities) {
+      const s = GLOW_SOURCES[e.sprite];
+      if (!s) continue;
+      const sp = new PIXI.Sprite(glowTex(s.color, s.r));
+      sp.anchor.set(0.5);
+      sp.blendMode = "add";
+      sp.position.set(e.px + TS / 2, e.py + TS / 2 - 8);
+      sp.alpha = s.alpha;
+      sp._glow = s;
+      sp._ph = hash(e.x, e.y) * Math.PI * 2;
+      lightFx.addChild(sp);
+      glowFx.push(sp);
+    }
+    if (G.map.theme !== "exterior") {
+      for (let y = 0; y < G.mapH; y++)
+        for (let x = 0; x < G.mapW; x++)
+          if (G.map.tiles[y][x] === "X") {
+            const sp = new PIXI.Sprite(glowTex(0xffe2a8, 65));
+            sp.anchor.set(0.5);
+            sp.blendMode = "add";
+            sp.position.set(x * TS + TS / 2, (y + 1.7) * TS);
+            sp.alpha = 0.10;
+            lightFx.addChild(sp);
+          }
+    }
+    motes = [];
+    if (G.map.theme !== "exterior" && G.map.theme !== "dojo") {
+      for (let i = 0; i < 10; i++) {
+        motes.push({
+          x: Math.random() * G.mapW * TS,
+          y: Math.random() * G.mapH * TS,
+          ph: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+    grade.reset();
+    if (G.map.theme === "exterior") {
+      grade.saturate(0.12, true);
+      grade.brightness(1.02, true);
+    } else if (G.map.theme === "dojo") {
+      grade.saturate(-0.12, true);
+      grade.brightness(0.94, true);
+      grade.contrast(0.08, true);
+    } else {
+      grade.saturate(0.06, true);
+    }
+
     butterflyLayer.removeChildren();
     butterflies = [];
     if (G.map.theme === "exterior") {
@@ -774,6 +864,16 @@
     // portal glow pulse
     if (glowSprite.visible) glowSprite.alpha = 0.25 + Math.sin(G.tick / 20) * 0.1;
 
+    // light sources: candle flicker / slow pulses
+    for (const sp of glowFx) {
+      const s = sp._glow;
+      if (s.mode === "flicker") {
+        sp.alpha = s.alpha * (0.82 + 0.13 * Math.sin(G.tick * 0.31 + sp._ph) + 0.08 * Math.sin(G.tick * 0.83 + sp._ph * 3));
+      } else if (s.mode === "pulse") {
+        sp.alpha = s.alpha * (0.85 + 0.15 * Math.sin(G.tick / 38 + sp._ph));
+      }
+    }
+
     // sparkles + butterflies
     fxG.clear();
     for (const e of G.entities) {
@@ -786,6 +886,15 @@
       b.sp.position.set(b.x, b.y);
       b.sp.texture = BUTTERFLY_TEX[b.color][(((G.tick / 7) | 0) + b.ph) % 2];
       b.sp.scale.x = Math.cos(b.a) < 0 ? -1 : 1; // face the way it drifts
+    }
+
+    // dust motes drifting through the light
+    for (const m of motes) {
+      m.y -= 0.12;
+      m.x += Math.sin(G.tick / 60 + m.ph) * 0.15;
+      if (m.y < 0) { m.y = G.mapH * TS; m.x = Math.random() * G.mapW * TS; }
+      const a = 0.10 + 0.08 * Math.sin(G.tick / 30 + m.ph);
+      fxG.rect(m.x, m.y, 2, 2).fill({ color: 0xfff4d8, alpha: a });
     }
 
     // red flash
