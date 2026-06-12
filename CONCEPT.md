@@ -73,3 +73,24 @@ The game is a congratulations on her graduation.
   poetry notebook or camera from Luke's room, the lone shoe from the closet)
 - Where exactly the portal sits (suggestion: behind the Lubbock house —
   finale scene on the other side)
+
+## Sprite reference (from photos, June 2026)
+- **Dominique (player)** — long flowing brown hair with caramel highlights,
+  big warm smile. Wears her graduation gown the whole game: black with TCOM
+  green front panel and green sleeve stripes. Tiny engagement-ring sparkle.
+- **Luke** — shaggy dark brown hair with bangs, tan skin, charcoal knit
+  sweater over navy tee, black shorts, brown Birkenstock sandals, black
+  camera on a neck strap.
+- **Ruthvik** — short black hair, neat beard, light-blue striped button-down,
+  warm smile.
+- **Mom** — shoulder-length blonde hair with bangs, black blazer, gold heart
+  pendant, big smile.
+- **Dad** — salt-and-pepper combed hair, square face, big grin, navy blazer
+  over pink button-down, khakis — plus (per Luke) thick-rimmed circular
+  glasses slightly too small, and running shoes in his room.
+- **Henry** (no photo) — very tall, long flowing dark hair, rising-sun fox
+  tattoo, dark clothes, samurai energy.
+
+## New from photos
+- The real Match Day sign — "I MATCHED! in Anesthesiology at TEXAS TECH" —
+  recreated as an examinable at graduation. Explains the Lubbock move.
