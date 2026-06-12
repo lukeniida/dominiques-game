@@ -21,13 +21,17 @@ Before Luke leaves a session, do a walkthrough covering:
   Dominique celebrating her med-school graduation. Mansion grounds + hallway
   + 5 family rooms, walk/examine, 5 sparkling treasures → portal finale.
   Full design record in CONCEPT.md; roadmap in TODO.md.
-- **V2 in progress** ("Pokémon-quality" visual rebuild): Steps 1-2 done —
-  PixiJS renderer swap, then exterior rebuilt with Cute Fantasy tiles
-  (quadrant autotiler for water/path shores, oak forest border, fenced
-  garden, ripple animation). Tile art loads from gitignored assets/
-  (scripts/restore-assets.sh rebuilds it). NEXT: Step 3, mansion facade
-  with the Cozy RPG kit (see TODO.md). Open decision for Luke: dock vs
-  grass point at the portal.
+- **V2 in progress** ("Pokémon-quality" visual rebuild): Steps 1-3 done —
+  PixiJS renderer swap; exterior rebuilt with Cute Fantasy PREMIUM pack
+  (Luke owns it, source at ~/Desktop/Cute_Fantasy + mirrored in
+  asset-candidates/): fully animated water via per-cell sprite textures,
+  lily pads/cattails/jumping fish, animated flowers, mixed tree species,
+  and the mansion = the pack's Inn building with chimney smoke.
+  Exterior map is now 29 rows (grew 5 for the mansion); trees + mansion
+  are depth-sorted sprites in entLayer, not baked. Tile art loads from
+  gitignored assets/ (scripts/restore-assets.sh rebuilds it).
+  NEXT: Step 4, interior rebuild with LimeZu Modern Interiors.
+  Open decision for Luke: dock vs grass point at the portal.
 - GitHub: private repo lukeiida/dominiques-game, all work pushed
 - Vercel: deliberately NOT deployed yet — Luke will say when
 

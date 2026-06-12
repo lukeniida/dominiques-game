@@ -3,6 +3,7 @@
 // Tile chars:
 //   g grass   f flowers   t tree    w water   p path   h tall grass
 //   F fence (solid)
+//   B mansion footprint (solid; the building art is drawn over it)
 //   V roof    M house wall   X window   D front door (warp)
 //   # wall    r wood floor   u rug   k dojo floor   K dojo wall
 //   d interior door (warp)
@@ -13,16 +14,23 @@ const MAPS = {
   // ════════════════════════ THE GROUNDS ════════════════════════
   exterior: {
     theme: "exterior",
-    playerStart: { x: 17, y: 19, facing: "up" },
+    playerStart: { x: 17, y: 24, facing: "up" },
     tiles: [
+      // the mansion (B block) is 15×12 tiles — the Inn art is drawn
+      // over rows 1-12; D cells are the doormat in front of its porch
       "tttttttttttttttttttttttttttttttttttt",
-      "tggggggggggggggggggggggggggggggwwwww",
-      "tggggggggggVVVVVVVVVVVVVVggggggwwwww",
-      "tggggggggggVVVVVVVVVVVVVVggggggwwwww",
-      "tggggggggggVVVVVVVVVVVVVVggggggwwwww",
-      "tggggggggggMMXXMMMMMXXMMMggggggwwwww",
-      "tggggggggggMMMMMMMMMMMMMMggggggwwwww",
-      "tggggggggggMMMMMMDDMMMMMMggggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
+      "tggggggggggggggggDDggggggggggggwwwww",
       "tggggggggggggggggppggggggggggggwwwww",
       "tgggggfggggggggggppggghhgggggggwwwww",
       "tggggggggggggggggppggggggggggggwwwww",
@@ -41,19 +49,19 @@ const MAPS = {
       "tttttttttttttttttttttttttttttttwwwww",
     ],
     warps: [
-      { x: 17, y: 7, to: "hallway", tx: 10, ty: 10, facing: "up" },
-      { x: 18, y: 7, to: "hallway", tx: 11, ty: 10, facing: "up" },
+      { x: 17, y: 12, to: "hallway", tx: 10, ty: 10, facing: "up" },
+      { x: 18, y: 12, to: "hallway", tx: 11, ty: 10, facing: "up" },
     ],
     entities: [
       {
-        x: 19, y: 19, sprite: "luke", name: "Luke", label: true,
+        x: 19, y: 24, sprite: "luke", name: "Luke", label: true,
         lines: [
           "Five sparkling things, Dom. One per family\nmember. The portal's at the cliff, over\nthe lake.",
           "And hey — take your time. The house\nisn't going anywhere. I haven't even\nbought it yet.",
         ],
       },
       {
-        x: 6, y: 18, sprite: "memorial", name: "Boo-Boo's Garden",
+        x: 6, y: 23, sprite: "memorial", name: "Boo-Boo's Garden",
         lines: [
           "A small stone in a bed of flowers.",
           "'BOO-BOO — a very good bunny.\nLoved by Dominique.\nSurvived by everyone who ever\nsaw her ears.'",
@@ -61,20 +69,20 @@ const MAPS = {
         ],
       },
       {
-        x: 8, y: 17, sprite: "booboo", name: "Boo-Boo", label: true, wander: 2,
+        x: 8, y: 22, sprite: "booboo", name: "Boo-Boo", label: true, wander: 2,
         lines: [
           "...",
           "(The bunny regards you warmly.\nSomehow, you feel twelve years younger.)",
         ],
       },
       {
-        x: 26, y: 16, sprite: "hoop", name: "Basketball Hoop",
+        x: 26, y: 21, sprite: "hoop", name: "Basketball Hoop",
         lines: [
           "Regulation height. Ruthvik checked.\nTwice.",
         ],
       },
       {
-        x: 25, y: 17, sprite: "ruthvik", name: "Ruthvik", label: true, wander: 1,
+        x: 25, y: 22, sprite: "ruthvik", name: "Ruthvik", label: true, wander: 1,
         lines: [
           "Dom! Welcome! I was just recording\nthe pod.",
           "Today's episode: 'Why the mid-range\njumper is undervalued, and why my\nfiancée is the best anesthesiologist\nin Texas.'",
@@ -82,7 +90,7 @@ const MAPS = {
         ],
       },
       {
-        x: 23, y: 20, sprite: "sign", name: "Warning Sign",
+        x: 23, y: 25, sprite: "sign", name: "Warning Sign",
         lines: [
           "'CAUTION: ALLERGEN VIEWING AREA.'",
           "'Absolutely NO LOOKING.'",
@@ -90,7 +98,7 @@ const MAPS = {
         ],
       },
       {
-        x: 25, y: 20, sprite: "pbtable", name: "Roped-Off Table", gag: "pb",
+        x: 25, y: 25, sprite: "pbtable", name: "Roped-Off Table", gag: "pb",
         lines: [
           "A picnic table behind a velvet rope.\nOn it: a single jar of peanut butter.",
           "A sign reads: 'DO NOT LOOK AT THE\nPEANUT BUTTER.'",
@@ -102,14 +110,14 @@ const MAPS = {
         ],
       },
       {
-        x: 28, y: 9, sprite: "towel", name: "Luke's Towel",
+        x: 28, y: 14, sprite: "towel", name: "Luke's Towel",
         lines: [
           "Luke's sunbathing towel. Still warm.",
           "He was here a second ago. He is also\nat the front path. Don't think about it.",
         ],
       },
       {
-        x: 33, y: 12, sprite: "portal", name: "The Portal", portal: true, glow: true,
+        x: 33, y: 17, sprite: "portal", name: "The Portal", portal: true, glow: true,
       },
     ],
   },
@@ -138,8 +146,8 @@ const MAPS = {
       { x: 12, y: 0, to: "dadroom", tx: 7, ty: 9, facing: "up" },
       { x: 16, y: 0, to: "henryroom", tx: 7, ty: 9, facing: "up" },
       { x: 21, y: 5, to: "closet", tx: 1, ty: 4, facing: "right" },
-      { x: 10, y: 11, to: "exterior", tx: 17, ty: 8, facing: "down" },
-      { x: 11, y: 11, to: "exterior", tx: 18, ty: 8, facing: "down" },
+      { x: 10, y: 11, to: "exterior", tx: 17, ty: 13, facing: "down" },
+      { x: 11, y: 11, to: "exterior", tx: 18, ty: 13, facing: "down" },
     ],
     entities: [
       {

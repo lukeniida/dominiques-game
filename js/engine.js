@@ -6,7 +6,7 @@
 
 (() => {
   const TILE = 16, SCALE = 3, TS = TILE * SCALE;
-  const SOLID = new Set(["t", "w", "V", "M", "X", "#", "K", "F"]);
+  const SOLID = new Set(["t", "w", "V", "M", "X", "#", "K", "F", "B"]);
 
   function hash(x, y) {
     let h = (x * 374761393 + y * 668265263) | 0;
@@ -55,7 +55,7 @@
         timer: G.tick + 60 + ((hash(e.x, e.y) * 200) | 0), dir: "down",
       }));
     if (G.state.flags.pbDone && name === "exterior") {
-      G.entities.push(makePatrolDad(26, 21));
+      G.entities.push(makePatrolDad(26, 26));
     }
     player.x = x; player.y = y;
     player.px = x * TS; player.py = y * TS;

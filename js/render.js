@@ -39,9 +39,18 @@
   // after a fresh clone to rebuild it from the downloaded packs.
   const IMG = {};
   await Promise.all(Object.entries({
-    grass: "grass.png", water: "water.png", waterEdges: "water-edges.png",
-    path: "path.png", pathEdges: "path-edges.png",
-    oak: "oak-tree.png", fences: "fences.png", decor: "decor.png",
+    grass: "grass.png",
+    path: "path.png", pathEdges: "path-edges.png", pathDecor: "path-decor.png",
+    fences: "fences.png", decor: "decor.png",
+    waterEdgesAnim: "water-edges-anim.png", waterMiddleAnim: "water-middle-anim.png",
+    fishAnim: "fish-anim.png",
+    mansion: "mansion.png", chimneySmoke: "chimney-smoke-anim.png",
+    treeOak: "tree-oak-anim.png", treeBirch: "tree-birch-anim.png", treeSpruce: "tree-spruce-anim.png",
+    lilyGreen: "lillypad-green-anim.png", lilyRed: "lillypad-red-anim.png",
+    lilyPurple: "lillypad-purple-anim.png", cattail: "cattail-anim.png",
+    waterlog: "waterlog-anim.png",
+    tallgrass1: "tallgrass-1-anim.png", tallgrass2: "tallgrass-2-anim.png",
+    flower1: "flower-1-anim.png", flower2: "flower-2-anim.png", flower3: "flower-3-anim.png",
   }).map(([key, file]) => new Promise((res, rej) => {
     const i = new Image();
     i.onload = () => res(IMG[key] = i);
@@ -66,25 +75,99 @@
     ctx.drawImage(img, cx * T16, cy * T16, T16, T16, dx, dy, TS, TS);
   }
 
-  function autoTile(ctx, sheet, mid, same, x, y, dx, dy) {
+  // Decides which sheet cell each 8px quadrant of a tile should use.
+  // Returns a spec we can either bake to canvas (paths) or compose
+  // into per-frame textures (animated water).
+  function quadSpec(same, x, y) {
     const n = same(x, y - 1), s = same(x, y + 1);
     const w = same(x - 1, y), e = same(x + 1, y);
-    const quads = [
-      [0, 0, !n, !w, !same(x - 1, y - 1), "TL", "T", "L", "ITL"],
-      [1, 0, !n, !e, !same(x + 1, y - 1), "TR", "T", "R", "ITR"],
-      [0, 1, !s, !w, !same(x - 1, y + 1), "BL", "B", "L", "IBL"],
-      [1, 1, !s, !e, !same(x + 1, y + 1), "BR", "B", "R", "IBR"],
-    ];
-    for (const [qx, qy, landV, landH, landDiag, corner, edgeV, edgeH, inner] of quads) {
-      let src = sheet, cell;
+    const spec = [];
+    const pick = (qx, qy, landV, landH, landDiag, corner, edgeV, edgeH, inner) => {
+      let cell = null;
       if (landV && landH) cell = BLOB[corner];
       else if (landV) cell = BLOB[edgeV];
       else if (landH) cell = BLOB[edgeH];
       else if (landDiag) cell = BLOB[inner];
-      else { src = mid; cell = [0, 0]; }
-      ctx.drawImage(src, cell[0] * T16 + qx * 8, cell[1] * T16 + qy * 8, 8, 8,
+      spec.push({ qx, qy, cell });
+    };
+    pick(0, 0, !n, !w, !same(x - 1, y - 1), "TL", "T", "L", "ITL");
+    pick(1, 0, !n, !e, !same(x + 1, y - 1), "TR", "T", "R", "ITR");
+    pick(0, 1, !s, !w, !same(x - 1, y + 1), "BL", "B", "L", "IBL");
+    pick(1, 1, !s, !e, !same(x + 1, y + 1), "BR", "B", "R", "IBR");
+    return spec;
+  }
+
+  function blitQuadSpec(ctx, spec, sheet, mid, dx, dy) {
+    for (const { qx, qy, cell } of spec) {
+      if (cell) ctx.drawImage(sheet, cell[0] * T16 + qx * 8, cell[1] * T16 + qy * 8, 8, 8,
+        dx + qx * TS / 2, dy + qy * TS / 2, TS / 2, TS / 2);
+      else ctx.drawImage(mid, qx * 8, qy * 8, 8, 8,
         dx + qx * TS / 2, dy + qy * TS / 2, TS / 2, TS / 2);
     }
+  }
+
+  // ════════════════════ animation textures ════════════════════
+  // Premium sheets are horizontal frame strips. Slice each frame into
+  // its own texture, upscaled 3× like everything else.
+  function sliceFrames(img, frameW, frameH, count) {
+    const texs = [];
+    for (let f = 0; f < count; f++) {
+      texs.push(PIXI.Texture.from(makeCanvas(frameW * SCALE, frameH * SCALE, (g) => {
+        g.imageSmoothingEnabled = false;
+        g.drawImage(img, f * frameW, 0, frameW, frameH, 0, 0, frameW * SCALE, frameH * SCALE);
+      })));
+    }
+    return texs;
+  }
+
+  // tree sheets are stump / tree+shadow / tree-only variants (chop
+  // states, not animation) — we want the middle one
+  const TREE_TEX = {
+    oak: sliceFrames(IMG.treeOak, 64, 80, 3)[1],
+    spruce: sliceFrames(IMG.treeSpruce, 64, 80, 3)[1],
+    birch: sliceFrames(IMG.treeBirch, 32, 48, 3)[1],
+  };
+  const DECOR_TEX = {
+    flower1: sliceFrames(IMG.flower1, 16, 16, 8),
+    flower2: sliceFrames(IMG.flower2, 16, 16, 8),
+    flower3: sliceFrames(IMG.flower3, 16, 16, 8),
+    tallgrass1: sliceFrames(IMG.tallgrass1, 16, 16, 8),
+    tallgrass2: sliceFrames(IMG.tallgrass2, 16, 16, 8),
+    lilyGreen: sliceFrames(IMG.lilyGreen, 16, 16, 8),
+    lilyRed: sliceFrames(IMG.lilyRed, 16, 16, 8),
+    lilyPurple: sliceFrames(IMG.lilyPurple, 16, 16, 8),
+    cattail: sliceFrames(IMG.cattail, 16, 16, 8),
+    waterlog: sliceFrames(IMG.waterlog, 16, 16, 16),
+  };
+  const FISH_TEX = sliceFrames(IMG.fishAnim, 16, 16, 16);
+  const SMOKE_TEX = sliceFrames(IMG.chimneySmoke, 32, 32, 5);
+  const MANSION_TEX = PIXI.Texture.from(makeCanvas(240 * SCALE, 192 * SCALE, (g) => {
+    g.imageSmoothingEnabled = false;
+    g.drawImage(IMG.mansion, 0, 0, 240 * SCALE, 192 * SCALE);
+  }));
+
+  // Animated water: every water cell gets 8 composed textures, one per
+  // animation frame. The edge sheet repeats the whole blob layout once
+  // per frame (stride 48px); the middle strip strides 16px. Cells with
+  // the same quadrant spec share one composed set.
+  const WATER_FRAMES = 8;
+  const waterTexCache = {};
+  function waterCellTextures(spec) {
+    const key = spec.map(q => (q.cell ? q.cell.join("") : "m")).join("|");
+    if (waterTexCache[key]) return waterTexCache[key];
+    const frames = [];
+    for (let f = 0; f < WATER_FRAMES; f++) {
+      frames.push(PIXI.Texture.from(makeCanvas(TS, TS, (g) => {
+        g.imageSmoothingEnabled = false;
+        for (const { qx, qy, cell } of spec) {
+          if (cell) g.drawImage(IMG.waterEdgesAnim, f * 48 + cell[0] * T16 + qx * 8, cell[1] * T16 + qy * 8, 8, 8,
+            qx * TS / 2, qy * TS / 2, TS / 2, TS / 2);
+          else g.drawImage(IMG.waterMiddleAnim, f * T16 + qx * 8, qy * 8, 8, 8,
+            qx * TS / 2, qy * TS / 2, TS / 2, TS / 2);
+        }
+      })));
+    }
+    return (waterTexCache[key] = frames);
   }
 
   // fences.png: col 0 = vertical run (top/mid/bottom + lone post),
@@ -109,26 +192,10 @@
     return [0, 3];
   }
 
-  // draws the oak sprite (optionally mirrored, optionally cropped to a
-  // source rect like just-the-canopy for the top map border)
-  function drawOak(ctx, dx, dy, dw, dh, flip, srcRect) {
-    const [sx, sy, sw, sh] = srcRect || [0, 0, 64, 80];
-    if (flip) {
-      ctx.save();
-      ctx.translate(dx + dw, 0); ctx.scale(-1, 1);
-      ctx.drawImage(IMG.oak, sx, sy, sw, sh, 0, dy, dw, dh);
-      ctx.restore();
-    } else {
-      ctx.drawImage(IMG.oak, sx, sy, sw, sh, dx, dy, dw, dh);
-    }
-  }
-
   // decor.png cells (col,row) — mapped with _slicer.html
   const TUFT_CELLS = [[0, 0], [1, 0], [2, 0]];
   const SPROUT_CELLS = [[3, 1]];
   const ROCK_CELL = [1, 2];
-  const FLOWER_CELLS = [[0, 1], [1, 1], [2, 1], [0, 10], [1, 10]];
-  const TALLGRASS_CELLS = [[6, 1], [6, 2]];
 
   function paintWood(g, seed, dark, ox, oy) {
     const r = mulberry(seed * 419 + 13);
@@ -149,12 +216,6 @@
       g.fillRect(ox + gx, oy + row * 12 + 3 + ((r() * 3) | 0) * 2, 8 + ((r() * 5) | 0) * 2, 1);
     }
   }
-
-  // animated water detail tiles (water-edges row 5) as PIXI textures
-  const RIPPLE_TEX = [0, 1, 2].map(i => PIXI.Texture.from(makeCanvas(TS, TS, g => {
-    g.imageSmoothingEnabled = false;
-    g.drawImage(IMG.waterEdges, i * T16, 5 * T16, T16, T16, 0, 0, TS, TS);
-  })));
 
   // ════════════════════ static map layers ════════════════════
   function tileAt(x, y) { return G.tileAt(x, y); }
@@ -203,7 +264,10 @@
 
   function buildExteriorGround(map) {
     const w = G.mapW * TS, h = G.mapH * TS;
-    const ripples = [];
+    const water = [];   // {x, y, spec} → animated water sprites
+    const spawns = [];  // {kind, px, py, ph} → animated decor sprites
+    const trees = [];   // {type, cx, baseY, flip, ph} → swaying tree sprites
+    const openWater = []; // candidate cells for the jumping fish
     // off-map counts as water so the lake bleeds past the map edge
     const isWater = (x, y) =>
       (x < 0 || y < 0 || x >= G.mapW || y >= G.mapH) ? true : map.tiles[y][x] === "w";
@@ -216,28 +280,34 @@
           const ch = map.tiles[y][x];
           const sx = x * TS, sy = y * TS;
           const hsh = hash(x, y);
+          const ph = (hsh * 8) | 0;
 
-          if ("#KMXV".includes(ch)) { drawWallTile(ctx, ch, sx, sy, "exterior"); continue; }
-          if (ch === "D") {
-            drawWallTile(ctx, "M", sx, sy, "exterior");
-            ctx.fillStyle = "#54391f"; ctx.fillRect(sx + 2, sy, TS - 4, TS);
-            ctx.fillStyle = "#3a2415"; ctx.fillRect(sx + 6, sy + 4, TS - 12, TS - 4);
-            ctx.fillStyle = "#e8c858"; ctx.fillRect(sx + TS - 14, sy + TS / 2, 3, 3);
-            continue;
-          }
-
+          // grass under everything — water/path edges and the mansion
+          // sprite all have transparent fringes
           ctx.drawImage(IMG.grass, sx, sy, TS, TS);
+
           if (ch === "w") {
-            autoTile(ctx, IMG.waterEdges, IMG.water, isWater, x, y, sx, sy);
+            water.push({ x, y, spec: quadSpec(isWater, x, y) });
             const open = isWater(x - 1, y) && isWater(x + 1, y) && isWater(x, y - 1) && isWater(x, y + 1)
               && isWater(x - 1, y - 1) && isWater(x + 1, y - 1) && isWater(x - 1, y + 1) && isWater(x + 1, y + 1);
-            if (open && hsh < 0.22) ripples.push({ x, y, kind: ((hsh * 40) | 0) % 3 });
+            if (open) {
+              openWater.push({ x, y });
+              if (hsh < 0.05) spawns.push({ kind: "waterlog", px: sx, py: sy, ph });
+              else if (hsh < 0.17) {
+                const lily = ["lilyGreen", "lilyGreen", "lilyRed", "lilyPurple"][(hsh * 97 | 0) % 4];
+                spawns.push({ kind: lily, px: sx, py: sy, ph });
+              }
+            } else if (!isWater(x, y - 1) && hsh < 0.22) {
+              // reeds along the upper bank
+              spawns.push({ kind: "cattail", px: sx, py: sy, ph });
+            }
           } else if (ch === "p") {
-            autoTile(ctx, IMG.pathEdges, IMG.path, isPath, x, y, sx, sy);
+            blitQuadSpec(ctx, quadSpec(isPath, x, y), IMG.pathEdges, IMG.path, sx, sy);
+            if (hsh > 0.94) blitCell(ctx, IMG.pathDecor, ((hsh * 31) | 0) % 3, 0, sx, sy);
           } else if (ch === "f") {
-            blitCell(ctx, IMG.decor, ...FLOWER_CELLS[(hsh * FLOWER_CELLS.length) | 0], sx, sy);
+            spawns.push({ kind: ["flower1", "flower2", "flower3"][(hsh * 13 | 0) % 3], px: sx, py: sy, ph });
           } else if (ch === "h") {
-            blitCell(ctx, IMG.decor, ...TALLGRASS_CELLS[(hsh * 2) | 0], sx, sy);
+            spawns.push({ kind: ["tallgrass1", "tallgrass2"][(hsh * 11 | 0) % 2], px: sx, py: sy, ph });
           } else if (ch === "F") {
             blitCell(ctx, IMG.fences,
               ...fencePiece(isFence(x, y - 1), isFence(x, y + 1), isFence(x - 1, y), isFence(x + 1, y)),
@@ -245,32 +315,47 @@
           } else if (ch === "g") {
             // sparse decoration keeps plain grass from feeling flat
             if (hsh < 0.10) blitCell(ctx, IMG.decor, ...TUFT_CELLS[((hsh * 30) | 0) % 3], sx, sy);
+            else if (hsh < 0.14) spawns.push({ kind: ["flower1", "flower2", "flower3"][(hsh * 53 | 0) % 3], px: sx, py: sy, ph });
             else if (hsh > 0.985) blitCell(ctx, IMG.decor, ...ROCK_CELL, sx, sy);
             else if (hsh > 0.97) blitCell(ctx, IMG.decor, ...SPROUT_CELLS[0], sx, sy);
           }
         }
       }
-      // forest border: big outlined oaks (4×5 tiles each) every other
-      // 't' cell, drawn top-to-bottom so canopies stack right. Jitter
-      // and random mirroring keep the row from reading as a hedge.
-      for (let y = 0; y < G.mapH; y++)
-        for (let x = 0; x < G.mapW; x++) {
-          if (map.tiles[y][x] !== "t" || (x + y) % 2) continue;
-          const jx = (hash(x * 31, y * 17) - 0.5) * TS * 0.8;
-          const jy = hash(x * 13, y * 29) * TS * 0.7;
-          const flip = hash(x * 7, y * 3) < 0.5;
-          if (y === 0) {
-            // top border: a full tree would show only its trunk, so hang
-            // just the canopy (top of the sprite) over the map edge —
-            // except above the mansion, which sits in its own clearing
-            if (x >= 11 && x <= 25) continue;
-            drawOak(ctx, x * TS + TS / 2 - 84, -66 + jy * 0.5, 168, 168, flip, [4, 0, 56, 56]);
-            continue;
-          }
-          drawOak(ctx, x * TS + TS / 2 - 96 + jx, y * TS + TS - 240 + jy, 192, 240, flip);
-        }
+      // top border: a static canopy band hanging over the map edge —
+      // a sprite tree's canopy would sit above the viewport and the
+      // camera would only ever show its trunk
+      for (let x = 0; x < G.mapW; x++) {
+        if (map.tiles[0][x] !== "t" || x % 2) continue;
+        const jy = hash(x * 13, 29) * TS * 0.35;
+        const flip = hash(x * 7, 3) < 0.5;
+        const dx = x * TS + TS / 2 - 96, dy = -66 + jy;
+        ctx.save();
+        if (flip) { ctx.translate(dx + 192, 0); ctx.scale(-1, 1); }
+        // canopy crop of the tree+shadow variant (the sheet's middle frame)
+        ctx.drawImage(IMG.treeOak, 64, 0, 64, 56, flip ? 0 : dx, dy, 192, 168);
+        ctx.restore();
+      }
     });
-    return { ground, ripples };
+
+    // forest border: every other 't' cell grows a tree — oaks mostly,
+    // with birches and spruces mixed in. Jitter + mirroring + species
+    // keep the line from reading as a hedge.
+    for (let y = 1; y < G.mapH; y++)
+      for (let x = 0; x < G.mapW; x++) {
+        if (map.tiles[y][x] !== "t" || (x + y) % 2) continue;
+        const jx = (hash(x * 31, y * 17) - 0.5) * TS * 0.8;
+        const jy = hash(x * 13, y * 29) * TS * 0.7;
+        const pick = hash(x * 5, y * 23);
+        trees.push({
+          type: pick < 0.62 ? "oak" : pick < 0.82 ? "birch" : "spruce",
+          cx: x * TS + TS / 2 + jx,
+          baseY: y * TS + TS + jy,
+          flip: hash(x * 7, y * 3) < 0.5,
+          ph: (hash(x * 3, y * 41) * 4) | 0,
+        });
+      }
+
+    return { ground, water, spawns, trees, openWater };
   }
 
   function buildInteriorGround(map, mapName) {
@@ -307,7 +392,7 @@
         }
       }
     });
-    return { ground, ripples: [] };
+    return { ground, water: [], spawns: [], trees: [], openWater: [] };
   }
 
   // ════════════════════ character textures ════════════════════
@@ -409,15 +494,16 @@
   // ════════════════════ scene graph ════════════════════
   const world = new PIXI.Container();
   const groundSprite = new PIXI.Sprite();
-  const waterLayer = new PIXI.Container();
+  const waterLayer = new PIXI.Container();   // animated water cells + fish
+  const decorLayer = new PIXI.Container();   // ground-hugging animated decor
   const glowSprite = new PIXI.Sprite(PIXI.Texture.from(GLOW_CANVAS));
   glowSprite.anchor.set(0.5);
   glowSprite.visible = false;
-  const entLayer = new PIXI.Container();
+  const entLayer = new PIXI.Container();     // trees, mansion, characters — depth-sorted
   entLayer.sortableChildren = true;
   const fxG = new PIXI.Graphics();
   const labelLayer = new PIXI.Container();
-  world.addChild(groundSprite, waterLayer, glowSprite, entLayer, fxG, labelLayer);
+  world.addChild(groundSprite, waterLayer, decorLayer, glowSprite, entLayer, fxG, labelLayer);
 
   const lightSprite = new PIXI.Sprite();
   const flashG = new PIXI.Graphics();
@@ -433,21 +519,76 @@
 
   // ════════════════════ map / entity sync ════════════════════
   let lastMap = "", lastEntVersion = -1, lastTakenCount = -1;
-  let rippleSprites = [], entitySprites = [], labels = [], butterflies = [];
+  let waterSprites = [], decorSprites = [], sceneSprites = [], smokeSprites = [];
+  let entitySprites = [], labels = [], butterflies = [];
+  let openWaterCells = [], fish = null;
   let runnerC = null;
 
   function rebuildMap() {
     lastMap = G.mapName;
-    const { ground, ripples } = buildGround(G.map, G.mapName);
+    const { ground, water, spawns, trees, openWater } = buildGround(G.map, G.mapName);
     groundSprite.texture = PIXI.Texture.from(ground);
+
+    // animated water, one sprite per cell — all cells share the same
+    // frame clock so the tiling stays seamless
     waterLayer.removeChildren();
-    rippleSprites = ripples.map(({ x, y, kind }) => {
-      const sp = new PIXI.Sprite(RIPPLE_TEX[kind]);
+    waterSprites = water.map(({ x, y, spec }) => {
+      const sp = new PIXI.Sprite();
+      sp._frames = waterCellTextures(spec);
+      sp.texture = sp._frames[0];
       sp.position.set(x * TS, y * TS);
-      sp._ph = hash(x, y) * Math.PI * 2;
       waterLayer.addChild(sp);
       return sp;
     });
+
+    // the jumping fish (one at a time, somewhere in open water)
+    openWaterCells = openWater;
+    fish = null;
+    if (openWater.length) {
+      const sp = new PIXI.Sprite(FISH_TEX[0]);
+      sp.visible = false;
+      waterLayer.addChild(sp);
+      fish = { sp, nextAt: G.tick + 200, start: -1 };
+    }
+
+    // ground-hugging animated decor (flowers, tall grass, lily pads…)
+    decorLayer.removeChildren();
+    decorSprites = spawns.map(({ kind, px, py, ph }) => {
+      const sp = new PIXI.Sprite(DECOR_TEX[kind][0]);
+      sp._frames = DECOR_TEX[kind];
+      sp._ph = ph;
+      sp.position.set(px, py);
+      decorLayer.addChild(sp);
+      return sp;
+    });
+
+    // depth-sorted scenery: trees + the mansion
+    sceneSprites = trees.map(({ type, cx, baseY, flip }) => {
+      const sp = new PIXI.Sprite(TREE_TEX[type]);
+      sp.anchor.set(0.5, 1);
+      sp.position.set(cx, baseY + 6);
+      if (flip) sp.scale.x = -1;
+      sp.zIndex = baseY - TS;
+      return sp;
+    });
+    smokeSprites = [];
+    if (G.map.theme === "exterior") {
+      const m = new PIXI.Sprite(MANSION_TEX);
+      m.position.set(11 * TS, 1 * TS);
+      m.zIndex = 11 * TS; // behind anything walking on the doormat row
+      sceneSprites.push(m);
+      // chimney smoke, one plume per chimney
+      for (const [px, py, ph] of [[588, 130, 0], [845, 112, 3]]) {
+        const sp = new PIXI.Sprite(SMOKE_TEX[0]);
+        sp.anchor.set(0.5, 1);
+        sp.position.set(px, py);
+        sp.zIndex = 11 * TS + 1;
+        sp._ph = ph;
+        smokeSprites.push(sp);
+        sceneSprites.push(sp);
+      }
+    }
+
     lightSprite.texture = PIXI.Texture.from(buildLight(G.map.theme));
     butterflies = [];
     if (G.map.theme === "exterior") {
@@ -469,6 +610,7 @@
     labelLayer.removeChildren();
     entitySprites = []; labels = [];
     glowSprite.visible = false;
+    for (const sp of sceneSprites) entLayer.addChild(sp);
     for (const e of G.entities) {
       const c = makeCharacter(e.sprite);
       placeChar(c, e.px, e.py);
@@ -569,8 +711,34 @@
     }
     world.position.set(Math.round(-camX + jx), Math.round(-camY + jy));
 
-    // water animation: detail ripples slowly fade in and out
-    for (const sp of rippleSprites) sp.alpha = 0.45 + Math.sin(G.tick / 50 + sp._ph) * 0.35;
+    // ── ambient animation clocks ──
+    // water: all cells share one frame so edges tile seamlessly
+    const wf = ((G.tick / 9) | 0) % WATER_FRAMES;
+    for (const sp of waterSprites) sp.texture = sp._frames[wf];
+    // decor sways with a per-sprite phase so the meadow doesn't march in step
+    const df = (G.tick / 8) | 0;
+    for (const sp of decorSprites) sp.texture = sp._frames[(df + sp._ph) % sp._frames.length];
+    const sf = (G.tick / 12) | 0;
+    for (const sp of smokeSprites) sp.texture = SMOKE_TEX[(sf + sp._ph) % SMOKE_TEX.length];
+    // the fish: surfaces somewhere in open water every few seconds
+    if (fish) {
+      if (fish.start < 0 && G.tick >= fish.nextAt) {
+        const c = openWaterCells[(Math.random() * openWaterCells.length) | 0];
+        fish.sp.position.set(c.x * TS, c.y * TS);
+        fish.sp.visible = true;
+        fish.start = G.tick;
+      }
+      if (fish.start >= 0) {
+        const f = ((G.tick - fish.start) / 5) | 0;
+        if (f >= FISH_TEX.length) {
+          fish.sp.visible = false;
+          fish.start = -1;
+          fish.nextAt = G.tick + 300 + Math.random() * 700;
+        } else {
+          fish.sp.texture = FISH_TEX[f];
+        }
+      }
+    }
 
     // entities
     for (const { e, c } of entitySprites) {
