@@ -39,8 +39,12 @@ NOT redistributable — gitignored):
       (would mean tweaking "cliff" dialogue).
 - [x] 3. **Mansion facade** — the premium pack's Inn: a grand two-story
       timber manor with porch, dormers, and smoking chimneys
-- [ ] 4. **Interior rebuild** — hallway + 5 rooms with LimeZu floors,
-      walls, real furniture (Dad's couch! Henry's battlestation!)
+- [x] 4. **Interior rebuild** — hallway + 5 rooms with LimeZu floors +
+      walls (herringbone hallway, teal studio, stone dojo…) and real
+      furniture for generic pieces (bookcase, computer desk, bed,
+      terrarium, red lamp, wardrobe, rug, doors, windows). The
+      personality props (altar, katanas, espresso, kintsugi heart,
+      dad-on-couch…) stay hand-drawn on purpose — they're the jokes.
 - [ ] 5. **Family sprites v2** — custom heads/hair/outfits on LimeZu
       animated bases: walk cycles + likenesses. Luke approves each.
 - [ ] 6. **Light & shader pass** — color grading, light maps (candle

@@ -30,7 +30,11 @@ Before Luke leaves a session, do a walkthrough covering:
   Exterior map is now 29 rows (grew 5 for the mansion); trees + mansion
   are depth-sorted sprites in entLayer, not baked. Tile art loads from
   gitignored assets/ (scripts/restore-assets.sh rebuilds it).
-  NEXT: Step 4, interior rebuild with LimeZu Modern Interiors.
+  Step 4 done: interiors rebuilt with LimeZu Room Builder walls/floors
+  per room (ROOM_STYLE in render.js) + furniture-sheet sprites for
+  generic pieces (FURN table maps entity sprite names to sheet rects);
+  personality props stay hand-drawn. NEXT: Step 5, family sprites v2
+  (LimeZu animated character bases + likenesses, Luke approves each).
   Open decision for Luke: dock vs grass point at the portal.
 - GitHub: private repo lukeiida/dominiques-game, all work pushed
 - Vercel: deliberately NOT deployed yet — Luke will say when

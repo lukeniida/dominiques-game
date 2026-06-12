@@ -55,5 +55,11 @@ cp "$P/Tiles/Grass/Path_Decoration.png" assets/exterior/path-decor.png
 # ── ambient life ──
 cp "$P/Animals/Butterfly/Butterfly.png" assets/exterior/butterfly.png
 
+# ── interiors (LimeZu Modern Interiors free) ──
+MI="asset-candidates/modern-interiors/Modern tiles_Free/Interiors_free/16x16"
+mkdir -p assets/interior
+cp "$MI/Room_Builder_free_16x16.png" assets/interior/room-builder.png
+cp "$MI/Interiors_free_16x16.png"    assets/interior/furniture.png
+
 echo "assets/ restored:"
-ls assets/exterior
+ls assets/exterior assets/interior

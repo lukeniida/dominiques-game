@@ -214,7 +214,7 @@ const MAPS = {
     ],
     entities: [
       {
-        x: 2, y: 1, sprite: "bookshelf", name: "Bookshelf",
+        x: 2, y: 2, sprite: "bookshelf", name: "Bookshelf",
         lines: [
           "Three hundred books. Poetry, philosophy,\nphysics, and one (1) manual for a camera\nhe has never read.",
         ],
@@ -365,7 +365,7 @@ const MAPS = {
     ],
     entities: [
       {
-        x: 2, y: 1, sprite: "bed", name: "Dad's Bed",
+        x: 2, y: 2, sprite: "bed", name: "Dad's Bed",
         lines: [
           "Perfectly made. Decorative.",
           "The couch is where the sleeping happens.",

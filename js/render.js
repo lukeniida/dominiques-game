@@ -24,14 +24,6 @@
     fn(c.getContext("2d"));
     return c;
   }
-  function mulberry(seed) {
-    return function () {
-      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
 
   // ════════════════════ asset sheets (Cute Fantasy pack) ════════════════════
   // Professional 16px tile art, drawn at 3× like everything else.
@@ -39,24 +31,25 @@
   // after a fresh clone to rebuild it from the downloaded packs.
   const IMG = {};
   await Promise.all(Object.entries({
-    grass: "grass.png",
-    path: "path.png", pathEdges: "path-edges.png", pathDecor: "path-decor.png",
-    fences: "fences.png", decor: "decor.png",
-    waterEdgesAnim: "water-edges-anim.png", waterMiddleAnim: "water-middle-anim.png",
-    fishAnim: "fish-anim.png",
-    mansion: "mansion.png", chimneySmoke: "chimney-smoke-anim.png",
-    treeOak: "tree-oak-anim.png", treeBirch: "tree-birch-anim.png", treeSpruce: "tree-spruce-anim.png",
-    lilyGreen: "lillypad-green-anim.png", lilyRed: "lillypad-red-anim.png",
-    lilyPurple: "lillypad-purple-anim.png", cattail: "cattail-anim.png",
-    waterlog: "waterlog-anim.png",
-    tallgrass1: "tallgrass-1-anim.png", tallgrass2: "tallgrass-2-anim.png",
-    flower1: "flower-1-anim.png", flower2: "flower-2-anim.png", flower3: "flower-3-anim.png",
-    butterfly: "butterfly.png",
+    grass: "exterior/grass.png",
+    path: "exterior/path.png", pathEdges: "exterior/path-edges.png", pathDecor: "exterior/path-decor.png",
+    fences: "exterior/fences.png", decor: "exterior/decor.png",
+    waterEdgesAnim: "exterior/water-edges-anim.png", waterMiddleAnim: "exterior/water-middle-anim.png",
+    fishAnim: "exterior/fish-anim.png",
+    mansion: "exterior/mansion.png", chimneySmoke: "exterior/chimney-smoke-anim.png",
+    treeOak: "exterior/tree-oak-anim.png", treeBirch: "exterior/tree-birch-anim.png", treeSpruce: "exterior/tree-spruce-anim.png",
+    lilyGreen: "exterior/lillypad-green-anim.png", lilyRed: "exterior/lillypad-red-anim.png",
+    lilyPurple: "exterior/lillypad-purple-anim.png", cattail: "exterior/cattail-anim.png",
+    waterlog: "exterior/waterlog-anim.png",
+    tallgrass1: "exterior/tallgrass-1-anim.png", tallgrass2: "exterior/tallgrass-2-anim.png",
+    flower1: "exterior/flower-1-anim.png", flower2: "exterior/flower-2-anim.png", flower3: "exterior/flower-3-anim.png",
+    butterfly: "exterior/butterfly.png",
+    roomBuilder: "interior/room-builder.png", furniture: "interior/furniture.png",
   }).map(([key, file]) => new Promise((res, rej) => {
     const i = new Image();
     i.onload = () => res(IMG[key] = i);
-    i.onerror = () => rej(new Error("missing assets/exterior/" + file + " — run scripts/restore-assets.sh"));
-    i.src = "assets/exterior/" + file;
+    i.onerror = () => rej(new Error("missing assets/" + file + " — run scripts/restore-assets.sh"));
+    i.src = "assets/" + file;
   })));
 
   // The edge sheets (water-edges, path-edges) are "blob" tilesets:
@@ -208,64 +201,8 @@
   const SPROUT_CELLS = [[3, 1]];
   const ROCK_CELL = [1, 2];
 
-  function paintWood(g, seed, dark, ox, oy) {
-    const r = mulberry(seed * 419 + 13);
-    const tones = dark ? ["#4c4456", "#484052", "#514a5c"] : ["#c89a62", "#c2945c", "#cfa26a"];
-    const line = dark ? "#38323f" : "#a87f4e";
-    const grain = dark ? "#564e62" : "#d8ac76";
-    for (let row = 0; row < 4; row++) {
-      g.fillStyle = tones[(r() * 3) | 0];
-      g.fillRect(ox, oy + row * 12, TS, 12);
-      g.fillStyle = line;
-      g.fillRect(ox, oy + row * 12 + 11, TS, 1);
-      if (r() < 0.7) {
-        const seam = ((r() * 20) | 0) * 2 + 4;
-        g.fillRect(ox + seam, oy + row * 12, 1, 12);
-      }
-      g.fillStyle = grain;
-      const gx = ((r() * 16) | 0) * 2;
-      g.fillRect(ox + gx, oy + row * 12 + 3 + ((r() * 3) | 0) * 2, 8 + ((r() * 5) | 0) * 2, 1);
-    }
-  }
-
   // ════════════════════ static map layers ════════════════════
   function tileAt(x, y) { return G.tileAt(x, y); }
-
-  function drawWallTile(ctx, ch, sx, sy, mapName) {
-    if (ch === "#") {
-      ctx.fillStyle = "#d8c8a8"; ctx.fillRect(sx, sy, TS, TS);
-      ctx.fillStyle = "#c8b696"; ctx.fillRect(sx, sy, TS, 4);
-      ctx.fillStyle = "#8a653a"; ctx.fillRect(sx, sy + TS - 10, TS, 10);
-      ctx.fillStyle = "#7a5530"; ctx.fillRect(sx, sy + TS - 10, TS, 2);
-    } else if (ch === "K") {
-      ctx.fillStyle = "#2e2e3a"; ctx.fillRect(sx, sy, TS, TS);
-      ctx.fillStyle = "#262630"; ctx.fillRect(sx, sy + TS - 10, TS, 10);
-      ctx.fillStyle = "#3a3a4a"; ctx.fillRect(sx, sy, TS, 3);
-    } else if (ch === "M") {
-      ctx.fillStyle = "#b8917a"; ctx.fillRect(sx, sy, TS, TS);
-      ctx.fillStyle = "#9a7560";
-      for (let r = 0; r < 4; r++) {
-        ctx.fillRect(sx, sy + r * 12 + 10, TS, 2);
-        ctx.fillRect(sx + ((r % 2) * 24 + 10), sy + r * 12, 2, 12);
-      }
-    } else if (ch === "X") {
-      ctx.fillStyle = "#b8917a"; ctx.fillRect(sx, sy, TS, TS);
-      ctx.fillStyle = "#f0ece0"; ctx.fillRect(sx + 6, sy + 6, TS - 12, TS - 14);
-      ctx.fillStyle = mapName === "exterior" ? "#f5d878" : "#a8d8f0";
-      ctx.fillRect(sx + 9, sy + 9, TS - 18, TS - 20);
-      ctx.fillStyle = "#f0ece0";
-      ctx.fillRect(sx + 9, sy + TS / 2 - 3, TS - 18, 2);
-      ctx.fillRect(sx + TS / 2 - 1, sy + 9, 2, TS - 20);
-    } else if (ch === "V") {
-      ctx.fillStyle = "#8a4a3a"; ctx.fillRect(sx, sy, TS, TS);
-      ctx.fillStyle = "#6e3a2c";
-      for (let r = 0; r < 4; r++) {
-        ctx.fillRect(sx, sy + r * 12 + 10, TS, 2);
-        ctx.fillRect(sx + ((r % 2) * 20 + 14), sy + r * 12, 2, 12);
-      }
-      ctx.fillStyle = "#a05a48"; ctx.fillRect(sx, sy, TS, 2);
-    }
-  }
 
   function buildGround(map, mapName) {
     return map.theme === "exterior"
@@ -371,41 +308,74 @@
     return { ground, water, spawns, trees, openWater, mansionAt };
   }
 
+  // Per-room looks from the LimeZu Room Builder sheet: wallRow is the
+  // top row of a 2-row wall color set (we use its trim+panel row);
+  // floor is a [cx, cy, w, h] tile region we repeat across the room.
+  const ROOM_STYLE = {
+    hallway:   { wallRow: 19, floor: [11, 13, 3, 2] },  // beige + herringbone parquet
+    lukeroom:  { wallRow: 7,  floor: [11, 13, 3, 2] },  // warm yellow
+    momroom:   { wallRow: 9,  floor: [11, 9, 3, 2] },   // mint + teal diamond tile
+    dadroom:   { wallRow: 17, floor: [11, 13, 3, 2] },  // slate blue
+    henryroom: { wallRow: 13, floor: [14, 11, 3, 2] },  // dark wood + gray stone
+    closet:    { wallRow: 5,  floor: [11, 13, 3, 2] },  // salmon
+  };
+
   function buildInteriorGround(map, mapName) {
     const w = G.mapW * TS, h = G.mapH * TS;
+    const style = ROOM_STYLE[mapName] || ROOM_STYLE.hallway;
+    const [fx, fy, fw, fh] = style.floor;
     const ground = makeCanvas(w, h, (ctx) => {
+      ctx.imageSmoothingEnabled = false;
       for (let y = 0; y < G.mapH; y++) {
         for (let x = 0; x < G.mapW; x++) {
           const ch = map.tiles[y][x];
           const sx = x * TS, sy = y * TS;
 
-          if ("#KMXV".includes(ch)) { drawWallTile(ctx, ch, sx, sy, mapName); continue; }
-
-          paintWood(ctx, ((x * 7 + y * 13) % 4) + 1, map.theme === "dojo" || ch === "k", sx, sy);
-          if (ch === "u") {
-            ctx.fillStyle = "#b8453e";
-            ctx.fillRect(sx, sy, TS, TS);
-            const isU = (xx, yy) => tileAt(xx, yy) === "u";
-            ctx.fillStyle = "#8a2f2a";
-            if (!isU(x, y - 1)) ctx.fillRect(sx, sy, TS, 5);
-            if (!isU(x, y + 1)) ctx.fillRect(sx, sy + TS - 5, TS, 5);
-            if (!isU(x - 1, y)) ctx.fillRect(sx, sy, 5, TS);
-            if (!isU(x + 1, y)) ctx.fillRect(sx + TS - 5, sy, 5, TS);
-            ctx.fillStyle = "#c8645c";
-            if (hash(x * 3, y * 5) < 0.6) ctx.fillRect(sx + 14, sy + 22, 8, 2);
-            if (hash(x * 7, y * 3) < 0.6) ctx.fillRect(sx + 30, sy + 10, 8, 2);
-            ctx.fillStyle = "#e8c858";
-            if (hash(x * 3, y * 5) > 0.7) ctx.fillRect(sx + 22, sy + 16, 4, 4);
+          if (ch === "#" || ch === "K" || ch === "X") {
+            blitCell(ctx, IMG.roomBuilder, x % 3, style.wallRow, sx, sy);
+            if (ch === "X") blitCell(ctx, IMG.furniture, 9, 24, sx, sy); // window on the wall
+            continue;
           }
+
+          // floor everywhere else (doors sit on floor too)
+          blitCell(ctx, IMG.roomBuilder, fx + (x % fw), fy + (y % fh), sx, sy);
           if (ch === "d") {
-            ctx.fillStyle = "#6b4a2f"; ctx.fillRect(sx + 2, sy, TS - 4, TS);
-            ctx.fillStyle = "#3a2415"; ctx.fillRect(sx + 6, sy, TS - 12, TS - 4);
-            ctx.fillStyle = "#e8c858"; ctx.fillRect(sx + TS - 14, sy + TS / 2 - 2, 3, 3);
+            // LimeZu door is 1×2 — bottom half sits in the cell, top
+            // half overlaps the wall above (clips at the canvas edge)
+            ctx.drawImage(IMG.furniture, 7 * T16, 8 * T16, T16, 2 * T16, sx, sy - TS, TS, TS * 2);
           }
         }
       }
+      // the great hallway keeps its big rug — LimeZu's red & gold one
+      if (mapName === "hallway") {
+        ctx.drawImage(IMG.furniture, 7 * T16, 15 * T16, 4 * T16, 3 * T16, 9 * TS, 4 * TS, 4 * TS, 3 * TS);
+      }
     });
     return { ground, water: [], spawns: [], trees: [], openWater: [], mansionAt: null };
+  }
+
+  // Entity sprites that now come from the LimeZu furniture sheet
+  // instead of the hand-drawn pixel grids: [cx, cy, w, h] in tiles,
+  // plus an optional dy nudge (wall-hung pieces). The personality
+  // props (altar, katanas, espresso machine…) stay hand-drawn.
+  const FURN = {
+    bookshelf:    { r: [5, 13, 2, 3] },
+    computerdesk: { r: [3, 3, 2, 2] },
+    terrarium:    { r: [2, 24, 1, 2] },
+    redlight:     { r: [11, 53, 1, 2] },
+    coatrack:     { r: [2, 21, 2, 2] },
+    bed:          { r: [13, 0, 2, 3] },
+    portrait:     { r: [10, 26, 1, 1], dy: -26 },
+    plant:        { r: [10, 44, 1, 2] },
+  };
+  const furnTexCache = {};
+  function furnTex(name) {
+    if (furnTexCache[name]) return furnTexCache[name];
+    const [cx, cy, fw, fh] = FURN[name].r;
+    return (furnTexCache[name] = PIXI.Texture.from(makeCanvas(fw * TS, fh * TS, (g) => {
+      g.imageSmoothingEnabled = false;
+      g.drawImage(IMG.furniture, cx * T16, cy * T16, fw * T16, fh * T16, 0, 0, fw * TS, fh * TS);
+    })));
   }
 
   // ════════════════════ character textures ════════════════════
@@ -438,6 +408,16 @@
   }
 
   function makeCharacter(spriteName, withShadow) {
+    if (FURN[spriteName]) {
+      const c = new PIXI.Container();
+      const body = new PIXI.Sprite(furnTex(spriteName));
+      body.anchor.set(0.5, 1);
+      body.position.y = FURN[spriteName].dy || 0;
+      c.addChild(body);
+      c._body = body;
+      c._furn = true;
+      return c;
+    }
     const c = new PIXI.Container();
     if (withShadow !== false) {
       const grid = SPRITES[spriteName].down;
@@ -764,9 +744,9 @@
       }
     }
 
-    // entities
+    // entities (furniture sprites keep their sheet texture)
     for (const { e, c } of entitySprites) {
-      c._body.texture = charTex(e.sprite, e.dir || "down", 0);
+      if (!c._furn) c._body.texture = charTex(e.sprite, e.dir || "down", 0);
       placeChar(c, e.px, e.py);
     }
     for (const { e, t, hPx } of labels) {
