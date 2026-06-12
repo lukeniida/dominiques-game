@@ -226,22 +226,41 @@
     };
   }
 
-  const G_BASE = "#67b234", G_DARK = "#4f9426", G_DARK2 = "#458420",
-        G_LIGHT = "#83c84a", G_DOT = "#a0dc64";
+  const G_BASE = "#64b22d", G_DARK = "#3f8a1e", G_TIP = "#9ad852";
 
   function paintGrass(g, seed) {
     const r = mulberry(seed * 1013 + 7);
     g.fillStyle = G_BASE;
     g.fillRect(0, 0, TS, TS);
-    for (let i = 0; i < 30; i++) { // individual grass blades, 2px wide
-      const bx = (r() * TS) | 0, by = (r() * TS) | 0, bh = 3 + ((r() * 5) | 0);
-      const p = r();
-      g.fillStyle = p < 0.45 ? G_DARK : p < 0.65 ? G_DARK2 : G_LIGHT;
-      g.fillRect(bx, by, 2, bh);
+    // soft mottling — sparse single cells slightly darker/lighter
+    for (let yy = 0; yy < 24; yy++)
+      for (let xx = 0; xx < 24; xx++) {
+        const n = r();
+        if (n < 0.05) { g.fillStyle = "#57a527"; g.fillRect(xx * 2, yy * 2, 2, 2); }
+        else if (n > 0.965) { g.fillStyle = "#74c23a"; g.fillRect(xx * 2, yy * 2, 2, 2); }
+      }
+    // grass tufts — clumps of dark blades, the Stardew signature
+    const tufts = 1 + ((r() * 3) | 0);
+    for (let t = 0; t < tufts; t++) {
+      const tx = 2 + ((r() * 15) | 0), ty = 4 + ((r() * 15) | 0);
+      const w = 4 + ((r() * 3) | 0);
+      g.fillStyle = "rgba(30,70,15,0.35)";
+      g.fillRect(tx * 2, ty * 2 + 6, w * 2, 2); // shadow under the clump
+      for (let b = 0; b < w; b++) {
+        const bh = 2 + ((r() * 3) | 0);
+        g.fillStyle = G_DARK;
+        g.fillRect((tx + b) * 2, ty * 2 + 6 - bh * 2, 2, bh * 2);
+        if (r() < 0.5) {
+          g.fillStyle = G_TIP;
+          g.fillRect((tx + b) * 2, ty * 2 + 6 - bh * 2, 2, 2);
+        }
+      }
     }
-    for (let i = 0; i < 8; i++) {
-      g.fillStyle = G_DOT;
-      g.fillRect((r() * TS) | 0, (r() * TS) | 0, 2, 2);
+    // occasional pebble
+    if (r() < 0.28) {
+      const px2 = 4 + ((r() * 18) | 0) * 2, py2 = 4 + ((r() * 18) | 0) * 2;
+      g.fillStyle = "#b8b8a8"; g.fillRect(px2, py2, 4, 4);
+      g.fillStyle = "#8f8f7e"; g.fillRect(px2, py2 + 2, 4, 2);
     }
   }
 
@@ -287,18 +306,33 @@
   const WATER_TILES = Array.from({ length: 4 }, (_, i) => makeCanvas(TS, TS, g => paintWater(g, i)));
 
   // A tree occupies its tile plus the tile above (tall canopy).
+  // The canopy is a noise-jittered banded ellipse rendered cell by cell —
+  // chunky pixel clusters with a dark outline and top-left light, like
+  // Stardew's foliage, instead of smooth vector circles.
   const TREE_TILE = makeCanvas(TS, TS * 2, g => {
-    g.fillStyle = "rgba(20,40,10,0.25)";
-    g.beginPath(); g.ellipse(TS / 2, TS * 2 - 8, 18, 6, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#6b4a2f"; g.fillRect(TS / 2 - 5, TS + 8, 10, TS - 16);
-    g.fillStyle = "#543a24"; g.fillRect(TS / 2 - 5, TS + 8, 4, TS - 16);
-    g.fillStyle = "#2e5e22"; g.beginPath(); g.arc(TS / 2, TS - 6, 22, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#3f7a2e"; g.beginPath(); g.arc(TS / 2 - 4, TS - 10, 17, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#569a3c"; g.beginPath(); g.arc(TS / 2 + 5, TS - 13, 13, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#6fb84e";
-    [[-8, -14], [2, -20], [9, -9], [-2, -6]].forEach(([ox, oy]) => {
-      g.fillRect(TS / 2 + ox, TS + oy, 4, 4);
-    });
+    g.fillStyle = "rgba(20,40,10,0.28)";
+    g.beginPath(); g.ellipse(TS / 2, TS * 2 - 7, 19, 6, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#3e2a18"; g.fillRect(TS / 2 - 7, TS + 4, 14, TS - 12);
+    g.fillStyle = "#6b4a2f"; g.fillRect(TS / 2 - 5, TS + 4, 10, TS - 14);
+    g.fillStyle = "#54391f"; g.fillRect(TS / 2 - 5, TS + 4, 4, TS - 14);
+    const cx = 11.5, cy = 10, rx = 11, ry = 9;
+    for (let yy = 0; yy < 22; yy++) {
+      for (let xx = 0; xx < 24; xx++) {
+        const jit = (hash(xx * 7 + 13, yy * 11 + 5) - 0.5) * 0.22;
+        const d = Math.hypot((xx - cx) / rx, (yy - cy) / ry) + jit;
+        if (d > 1.04) continue;
+        const light = ((xx - cx) / rx) * 0.35 + ((yy - cy) / ry) * 0.55;
+        const v = d * 0.55 + light * 0.5;
+        let col;
+        if (d > 0.92) col = "#1e4218";
+        else if (v < -0.25) col = "#8cd84e";
+        else if (v < 0) col = "#6cc23e";
+        else if (v < 0.25) col = "#4f9e30";
+        else col = "#356f24";
+        g.fillStyle = col;
+        g.fillRect(xx * 2, yy * 2, 2, 2);
+      }
+    }
   });
 
   function tileAt(x, y) {
@@ -325,6 +359,25 @@
     // grass under everything else
     ctx.drawImage(GRASS_TILES[(h * 8) | 0], sx, sy);
     if (ch === "f") ctx.drawImage(FLOWER_TILES[(h * 6) | 0], sx, sy);
+
+    if (ch === "p") {
+      // golden dirt path with soft edges where it meets grass
+      const isP = (xx, yy) => tileAt(xx, yy) === "p";
+      const pad = 6;
+      const l = isP(x - 1, y) ? 0 : pad, rr = isP(x + 1, y) ? 0 : pad;
+      const tp = isP(x, y - 1) ? 0 : pad, bt = isP(x, y + 1) ? 0 : pad;
+      ctx.fillStyle = "#a87f3e"; // dark rim
+      ctx.fillRect(sx + Math.max(0, l - 2), sy + Math.max(0, tp - 2),
+        TS - Math.max(0, l - 2) - Math.max(0, rr - 2),
+        TS - Math.max(0, tp - 2) - Math.max(0, bt - 2));
+      ctx.fillStyle = "#d9b35c"; // sand
+      ctx.fillRect(sx + l, sy + tp, TS - l - rr, TS - tp - bt);
+      for (let i = 0; i < 5; i++) { // speckles
+        const hx = hash(x * 5 + i, y * 9 + i);
+        ctx.fillStyle = hx < 0.5 ? "#c79a4e" : "#ecd084";
+        ctx.fillRect(sx + 6 + ((hx * 631) | 0) % (TS - 16), sy + 6 + ((hx * 277) | 0) % (TS - 16), 2, 2);
+      }
+    }
   }
 
   function drawLabels(camX, camY) {
