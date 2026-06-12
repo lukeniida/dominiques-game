@@ -1,65 +1,75 @@
-# Dominique's Game — Concept (Explore phase, draft 3)
+# Dominique's Game — Concept (Explore phase, draft 4 — near-final)
 
 ## The occasion
 Dominique is Luke's twin sister, 28. Just graduated from medical school at
 UNT Health Fort Worth (TCOM — green and blue). Future anesthesiologist.
-Just engaged to **Ruthvik**, a surgeon; they moved in together in Lubbock,
-in the West Texas desert. **The game is a congratulations on her graduation**
-and a celebration of her new life.
+Just engaged to **Ruthvik**, a surgeon; they live in Lubbock, West Texas.
+The game is a congratulations on her graduation.
 
-## Ship target
-Luke wants this playable **today or tomorrow**. Scope everything to that.
+## Title / final sign
+**"A game Luke made while Dominique was home."** (confirm exact wording)
 
-## The shape (decided)
-- No big narrative. A world she can walk through, look at things, pick things
-  up. The joy is discovery, not winning.
-- **Three areas**, connected by simple walk-between transitions (can be
-  fantasy — no airport needed):
-  1. **Graduation** — outdoor Texas ceremony, caps in the air, TCOM green/blue
-  2. **The Dream Mansion** — the big area; Chicago, rolling hills, on a cliff
-     over Lake Michigan, sunset, tall grass, butterflies, flowers
-  3. **Lubbock** — small desert house with Ruthvik; the final congrats sign
-- **Luke's avatar follows her through the game** — always around, leaving
-  notes, trolling her with inside jokes. Camera around his neck.
-- Stardew Valley warmth, top-down pixel, Pokémon bones, 30–60 min.
+## Ship target & platform
+- Playable today/tomorrow. Scope ruthlessly.
+- **Played on a computer** — keyboard controls (arrows + space/Z to examine).
 
-## The Mansion (the centerpiece)
-Big hallway with five rooms off it:
-- **Luke's room** — planets, huge windows streaming light, tons of books and
-  notebooks (poetry), spiritual materials, candles, computer stuff, Claude,
-  guitars
-- **Mom's room** — art everywhere, easels, angels, a red light therapy device
-  (Mom personality: always moving furniture around)
-- **Dad's room** — a bed, a couch to lie on, a little jar of granola, a rack
-  of 20 pairs of designer glasses and running shoes. That's it.
-  (Dad personality: lying on couch or doing a very slow jog)
-- **Henry's room** — dark cavernous samurai gaming dojo: big computers, VR
-  headsets, metal welding station with samurai swords, huge leopard gecko
-  terrarium. Tall, long flowing hair, rising-sun fox tattoo.
-- **Dominique's room** — a small walk-in closet. One pair of shoes and a coat
-  rack. That's it. (Long-running inside joke.)
+## Core mechanics (decided)
+- Walk + examine everything (text boxes carry the personality)
+- **Inventory**: a handful of SPARKLING pickup items — basically the only
+  objects she can collect. Known so far, all in the mansion:
+  - something from Henry's room
+  - something from Luke's room
+  - something from Dominique's closet
+- **The final portal/gate**: to enter the ending, she must have collected the
+  items. Luke prompts her at the start: "Hey, there are some objects around
+  here you can pick up."
+- **NPCs walk around** — scripted/simple wandering, but alive
+- **Luke's avatar appears throughout the world doing things**: sparring
+  katanas with Henry in the dojo, sunbathing right outside Mom's art studio,
+  peering into rooms. The trolling-tour-guide energy, embodied not written.
+- A note inside joke somewhere (Mom's room area): Luke lobbying Dad to buy
+  SpaceX stock.
+- **Peanut Butter Gag (approved)**: at graduation, a roped-off area with
+  warning signs and a jar of peanut butter on a table. Examine it → screen
+  shakes, flashes red, Dad's avatar sprints in: "Why? Why? Why?"
+- No health bar. No battles.
 
-## Jokes & homages (must-haves)
-- **The Peanut Butter Table** — grade-school memory: kids with allergies had
-  a peanut butter table; Dad kept asking why-why-why; Dominique, frustrated:
-  "Dad, they can't even LOOK at peanut butter!" In-game: a table you must not
-  look at. Gag over mechanic — no health bar.
-- **Boo-Boo** — Dominique's bunny who died ~12 years ago. Gentle homage.
-- **Knitting** — yarn scattered through the world
-- **Kindle / books** — reading references
-- **Anesthesiology jokes** — sprinkled throughout
+## The world — three areas
+1. **Graduation (Fort Worth)** — outdoor ceremony, caps in the air, TCOM
+   green/blue, Texas vibes, peanut butter table gag
+2. **Dream Mansion (Chicago)** — THE centerpiece. Rolling hills, cliff over
+   Lake Michigan, sunset, tall grass, butterflies, flowers. Big hallway,
+   five rooms, each dense with examinable objects:
+   - **Luke's** — planets, huge light-streaming windows, books, poetry
+     notebooks, spiritual materials, candles, computer stuff, Claude, guitars
+   - **Mom's** — art, easels, angels, red light therapy device
+   - **Dad's** — bed, couch, granola jar, 20 designer glasses, running shoes,
+     The Thinker (Rodin) statue, espresso setup
+   - **Henry's** — dark samurai gaming dojo: big computers, VR headsets,
+     welding station, samurai swords, huge leopard gecko terrarium
+   - **Dominique's** — a walk-in closet: one pair of shoes, a coat rack
+3. **Lubbock** — small desert house with Ruthvik; the portal + finale
 
-## Cast
-- **Dominique** — the player
-- **Luke** — twin, trolling tour guide, camera around neck, "Harry Potter but
-  half Japanese"
-- **Ruthvik** — fiancé, surgeon, waiting in Lubbock
-- **Henry** — younger brother, see room above; has epilepsy; really cool
-- **Mom** — blonde artist, perpetual furniture rearranger
-- **Dad** — couch / slow jog, two states only
-- **Boo-Boo** — bunny homage
+## Cast (appearance notes)
+- **Dominique** — the player. Knitting, Kindle, anesthesiology jokes.
+  (Photos incoming.)
+- **Luke** — twin. Camera around neck. "Harry Potter but half Japanese."
+- **Ruthvik** — fiancé, surgeon, in Lubbock. (Photo incoming.)
+- **Henry** — really tall, long flowing hair, rising-sun fox tattoo, half
+  Asian, has epilepsy, really cool.
+- **Mom** — fully Swedish, blonde, artist, perpetually rearranging furniture.
+- **Dad** — fully Japanese. Big square face, thick-rimmed circular glasses
+  slightly too small, salt-and-pepper hair, broad-shouldered but thin.
+  Successful businessman — owns a CNC machining company. Up before dawn,
+  four espressos, works hard, then couch / very slow jog. Off-color but
+  funny jokes. Loves his running shoes.
+- **Boo-Boo** — Dominique's bunny (~12 years gone). Memorial homage in the
+  mansion's flower garden.
 
-## Open questions before Plan phase
-- Exact wording of the final congrats sign
-- Dominique's avatar look (photo offer still open)
-- Will she play on a laptop (keyboard) or phone (touch controls)?
+## Still open (small)
+- Confirm sign/title wording above
+- Photos of Dominique + Ruthvik (Luke pasting next)
+- Which three objects sparkle (suggestions: a katana from Henry's dojo, a
+  poetry notebook or camera from Luke's room, the lone shoe from the closet)
+- Where exactly the portal sits (suggestion: behind the Lubbock house —
+  finale scene on the other side)
