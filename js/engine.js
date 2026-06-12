@@ -6,7 +6,7 @@
 
 (() => {
   const TILE = 16, SCALE = 3, TS = TILE * SCALE;
-  const SOLID = new Set(["t", "w", "V", "M", "X", "#", "K"]);
+  const SOLID = new Set(["t", "w", "V", "M", "X", "#", "K", "F"]);
 
   function hash(x, y) {
     let h = (x * 374761393 + y * 668265263) | 0;
@@ -322,7 +322,13 @@
     G.started = true;
     document.getElementById("title-screen").classList.add("hidden");
   }
+  if (params.has("quiet")) G.state.flags.greeted = true; // dev: skip the intro dialog
   const startMap = params.get("map") && MAPS[params.get("map")] ? params.get("map") : "exterior";
   const ps = MAPS[startMap].playerStart;
-  loadMap(startMap, ps.x, ps.y, ps.facing);
+  let sx = ps.x, sy = ps.y;
+  if (params.has("at")) { // dev: spawn anywhere, e.g. ?at=30,12
+    const [ax, ay] = params.get("at").split(",").map(Number);
+    if (!isNaN(ax) && !isNaN(ay)) { sx = ax; sy = ay; }
+  }
+  loadMap(startMap, sx, sy, ps.facing);
 })();

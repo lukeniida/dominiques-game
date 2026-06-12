@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!-- Temporary dev tool: draws an asset sheet at 6x with a 16px grid and
+     col,row labels so we can read off exact tile coordinates. Not part
+     of the game. Usage: _slicer.html?img=assets/exterior/decor.png -->
+<html><body style="margin:0;background:#222">
+<canvas id="c"></canvas>
+<script>
+const img = new Image();
+img.src = new URLSearchParams(location.search).get("img") || "assets/exterior/decor.png";
+img.onload = () => {
+  const S = 6, T = 16;
+  const c = document.getElementById("c");
+  c.width = img.width * S + 40; c.height = img.height * S + 40;
+  const g = c.getContext("2d");
+  g.imageSmoothingEnabled = false;
+  g.fillStyle = "#3a6"; g.fillRect(40, 40, img.width * S, img.height * S);
+  g.drawImage(img, 40, 40, img.width * S, img.height * S);
+  g.strokeStyle = "rgba(255,0,0,0.6)"; g.fillStyle = "#fff";
+  g.font = "bold 14px monospace"; g.textAlign = "center";
+  for (let x = 0; x <= img.width / T; x++) {
+    g.beginPath(); g.moveTo(40 + x * T * S, 40); g.lineTo(40 + x * T * S, c.height); g.stroke();
+    if (x < img.width / T) g.fillText(x, 40 + x * T * S + T * S / 2, 25);
+  }
+  for (let y = 0; y <= img.height / T; y++) {
+    g.beginPath(); g.moveTo(40, 40 + y * T * S); g.lineTo(c.width, 40 + y * T * S); g.stroke();
+    if (y < img.height / T) g.fillText(y, 20, 40 + y * T * S + T * S / 2 + 5);
+  }
+};
+</script>
+</body></html>

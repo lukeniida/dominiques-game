@@ -21,10 +21,13 @@ Before Luke leaves a session, do a walkthrough covering:
   Dominique celebrating her med-school graduation. Mansion grounds + hallway
   + 5 family rooms, walk/examine, 5 sparkling treasures → portal finale.
   Full design record in CONCEPT.md; roadmap in TODO.md.
-- **V2 in progress** ("Pokémon-quality" visual rebuild): Step 1 done —
-  PixiJS renderer swap. engine.js = logic only, render.js = GPU drawing,
-  pixi vendored in js/vendor/. NEXT: Step 2, exterior rebuild with
-  Cute Fantasy tiles (see TODO.md).
+- **V2 in progress** ("Pokémon-quality" visual rebuild): Steps 1-2 done —
+  PixiJS renderer swap, then exterior rebuilt with Cute Fantasy tiles
+  (quadrant autotiler for water/path shores, oak forest border, fenced
+  garden, ripple animation). Tile art loads from gitignored assets/
+  (scripts/restore-assets.sh rebuilds it). NEXT: Step 3, mansion facade
+  with the Cozy RPG kit (see TODO.md). Open decision for Luke: dock vs
+  grass point at the portal.
 - GitHub: private repo lukeiida/dominiques-game, all work pushed
 - Vercel: deliberately NOT deployed yet — Luke will say when
 
@@ -45,5 +48,12 @@ Before Luke leaves a session, do a walkthrough covering:
 - Local server: `cd ~/Projects/dominiques-game && python3 -m http.server 4173`
   then open http://localhost:4173
 - Dev params: `?skiptitle` skips title, `?map=<name>` jumps to a map
-  (exterior, hallway, lukeroom, momroom, dadroom, henryroom, closet)
-- Verify renders: headless Chrome screenshots (see git history for pattern)
+  (exterior, hallway, lukeroom, momroom, dadroom, henryroom, closet),
+  `?quiet` skips the intro dialog, `?at=x,y` spawns at a tile
+- Verify renders: headless Chrome screenshots, e.g.
+  `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless
+  --disable-gpu --force-device-scale-factor=1 --screenshot=/tmp/shot.png
+  --window-size=960,624 --hide-scrollbars --virtual-time-budget=5000
+  "http://localhost:4173/?skiptitle&quiet&at=17,9"`
+- Inspect asset sheet tile coords: `_slicer.html?img=assets/exterior/<file>.png`
+  (draws a labeled 16px grid over any sheet)

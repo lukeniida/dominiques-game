@@ -2,6 +2,7 @@
 // maps.js — the world and every word in it.
 // Tile chars:
 //   g grass   f flowers   t tree    w water   p path   h tall grass
+//   F fence (solid)
 //   V roof    M house wall   X window   D front door (warp)
 //   # wall    r wood floor   u rug   k dojo floor   K dojo wall
 //   d interior door (warp)
@@ -27,14 +28,14 @@ const MAPS = {
       "tggggggggggggggggppggggggggggggwwwww",
       "tggggggggggggggggppggggggggggggggwww",
       "tggggggggggggggggpppppppppppppppggww",
-      "tggggggggggggggggppggggggggggggggwww",
+      "tggggggggggggggggpppppppppppppppgwww",
       "tggggggggggggggggppggggggggggggwwwww",
-      "tgggppppppppppppppppggggggggggGwwwww".replace("G", "g"),
-      "tggggggggggggggggppggggggggggggwwwww",
-      "tggffffffggggggggppggggggggggggwwwww",
-      "tggffffffggggggggppggggggggggggwwwww",
-      "tggffffffggggggggppggggggggggggwwwww",
-      "tggggggggggggggggppggggggggggggwwwww",
+      "tgggppppppppppppppppgggggggggggwwwww",
+      "tgggppppppppppppppppgggggggggggwwwww",
+      "tgFffffffFgggggggppggggggggggggwwwww",
+      "tgFffffffFgggggggppggggggggggggwwwww",
+      "tgFffffffFgggggggppggggggggggggwwwww",
+      "tgFFFFFFFFgggggggppggggggggggggwwwww",
       "thhhhhhhhggggggggggggggggggggggwwwww",
       "thhhhhhggggggggggggggggggggggggwwwww",
       "tttttttttttttttttttttttttttttttwwwww",

@@ -33,80 +33,102 @@
     };
   }
 
-  // ════════════════════ terrain painters (ported intact) ════════════════════
-  const G_BASE = "#64b22d", G_DARK = "#3f8a1e", G_TIP = "#9ad852";
+  // ════════════════════ asset sheets (Cute Fantasy pack) ════════════════════
+  // Professional 16px tile art, drawn at 3× like everything else.
+  // Files live in gitignored assets/ — run scripts/restore-assets.sh
+  // after a fresh clone to rebuild it from the downloaded packs.
+  const IMG = {};
+  await Promise.all(Object.entries({
+    grass: "grass.png", water: "water.png", waterEdges: "water-edges.png",
+    path: "path.png", pathEdges: "path-edges.png",
+    oak: "oak-tree.png", fences: "fences.png", decor: "decor.png",
+  }).map(([key, file]) => new Promise((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(IMG[key] = i);
+    i.onerror = () => rej(new Error("missing assets/exterior/" + file + " — run scripts/restore-assets.sh"));
+    i.src = "assets/exterior/" + file;
+  })));
 
-  function paintGrass(g, seed) {
-    const r = mulberry(seed * 1013 + 7);
-    g.fillStyle = G_BASE;
-    g.fillRect(0, 0, TS, TS);
-    for (let yy = 0; yy < 24; yy++)
-      for (let xx = 0; xx < 24; xx++) {
-        const n = r();
-        if (n < 0.05) { g.fillStyle = "#57a527"; g.fillRect(xx * 2, yy * 2, 2, 2); }
-        else if (n > 0.965) { g.fillStyle = "#74c23a"; g.fillRect(xx * 2, yy * 2, 2, 2); }
-      }
-    const tufts = 1 + ((r() * 3) | 0);
-    for (let t = 0; t < tufts; t++) {
-      const tx = 2 + ((r() * 15) | 0), ty = 4 + ((r() * 15) | 0);
-      const w = 4 + ((r() * 3) | 0);
-      g.fillStyle = "rgba(30,70,15,0.35)";
-      g.fillRect(tx * 2, ty * 2 + 6, w * 2, 2);
-      for (let b = 0; b < w; b++) {
-        const bh = 2 + ((r() * 3) | 0);
-        g.fillStyle = G_DARK;
-        g.fillRect((tx + b) * 2, ty * 2 + 6 - bh * 2, 2, bh * 2);
-        if (r() < 0.5) { g.fillStyle = G_TIP; g.fillRect((tx + b) * 2, ty * 2 + 6 - bh * 2, 2, 2); }
-      }
-    }
-    if (r() < 0.28) {
-      const px2 = 4 + ((r() * 18) | 0) * 2, py2 = 4 + ((r() * 18) | 0) * 2;
-      g.fillStyle = "#b8b8a8"; g.fillRect(px2, py2, 4, 4);
-      g.fillStyle = "#8f8f7e"; g.fillRect(px2, py2 + 2, 4, 2);
+  // The edge sheets (water-edges, path-edges) are "blob" tilesets:
+  // rows 0-2 are a 3×3 pool — corners, edges, and pure middle — and
+  // rows 3-4 hold the four inner-corner pieces (grass poking into a
+  // diagonal). We pick art per 8px QUADRANT of each 16px tile, which
+  // composes those pieces into every possible shoreline/junction shape.
+  const T16 = 16;
+  const BLOB = {
+    TL: [0, 0], T: [1, 0], TR: [2, 0],
+    L:  [0, 1], MID: [1, 1], R: [2, 1],
+    BL: [0, 2], B: [1, 2], BR: [2, 2],
+    ITL: [1, 4], ITR: [0, 4], IBL: [1, 3], IBR: [0, 3],
+  };
+
+  function blitCell(ctx, img, cx, cy, dx, dy) {
+    ctx.drawImage(img, cx * T16, cy * T16, T16, T16, dx, dy, TS, TS);
+  }
+
+  function autoTile(ctx, sheet, mid, same, x, y, dx, dy) {
+    const n = same(x, y - 1), s = same(x, y + 1);
+    const w = same(x - 1, y), e = same(x + 1, y);
+    const quads = [
+      [0, 0, !n, !w, !same(x - 1, y - 1), "TL", "T", "L", "ITL"],
+      [1, 0, !n, !e, !same(x + 1, y - 1), "TR", "T", "R", "ITR"],
+      [0, 1, !s, !w, !same(x - 1, y + 1), "BL", "B", "L", "IBL"],
+      [1, 1, !s, !e, !same(x + 1, y + 1), "BR", "B", "R", "IBR"],
+    ];
+    for (const [qx, qy, landV, landH, landDiag, corner, edgeV, edgeH, inner] of quads) {
+      let src = sheet, cell;
+      if (landV && landH) cell = BLOB[corner];
+      else if (landV) cell = BLOB[edgeV];
+      else if (landH) cell = BLOB[edgeH];
+      else if (landDiag) cell = BLOB[inner];
+      else { src = mid; cell = [0, 0]; }
+      ctx.drawImage(src, cell[0] * T16 + qx * 8, cell[1] * T16 + qy * 8, 8, 8,
+        dx + qx * TS / 2, dy + qy * TS / 2, TS / 2, TS / 2);
     }
   }
 
-  function paintTallGrass(g, seed) {
-    paintGrass(g, seed * 3 + 1);
-    const r = mulberry(seed * 77 + 5);
-    for (let i = 0; i < 26; i++) {
-      const bx = 2 + ((r() * 21) | 0), by = 8 + ((r() * 14) | 0);
-      const bh = 5 + ((r() * 4) | 0);
-      g.fillStyle = r() < 0.6 ? "#2f7a16" : "#3f8a1e";
-      g.fillRect(bx * 2, by * 2 - bh * 2, 2, bh * 2);
-      g.fillStyle = "#8cd64a";
-      if (r() < 0.6) g.fillRect(bx * 2, by * 2 - bh * 2, 2, 2);
+  // fences.png: col 0 = vertical run (top/mid/bottom + lone post),
+  // row 0 cols 1-3 = horizontal run, the 3×3 at (1-3, 1-3) = a full
+  // square with corners, T-junctions, and a cross.
+  function fencePiece(u, d, l, r) {
+    if (u && d && l && r) return [2, 2];
+    if (d && l && r) return [2, 1];
+    if (u && l && r) return [2, 3];
+    if (u && d && r) return [1, 2];
+    if (u && d && l) return [3, 2];
+    if (d && r) return [1, 1];
+    if (d && l) return [3, 1];
+    if (u && r) return [1, 3];
+    if (u && l) return [3, 3];
+    if (l && r) return [2, 0];
+    if (u && d) return [0, 1];
+    if (r) return [1, 0];
+    if (l) return [3, 0];
+    if (d) return [0, 0];
+    if (u) return [0, 2];
+    return [0, 3];
+  }
+
+  // draws the oak sprite (optionally mirrored, optionally cropped to a
+  // source rect like just-the-canopy for the top map border)
+  function drawOak(ctx, dx, dy, dw, dh, flip, srcRect) {
+    const [sx, sy, sw, sh] = srcRect || [0, 0, 64, 80];
+    if (flip) {
+      ctx.save();
+      ctx.translate(dx + dw, 0); ctx.scale(-1, 1);
+      ctx.drawImage(IMG.oak, sx, sy, sw, sh, 0, dy, dw, dh);
+      ctx.restore();
+    } else {
+      ctx.drawImage(IMG.oak, sx, sy, sw, sh, dx, dy, dw, dh);
     }
   }
 
-  function paintFlower(g, seed) {
-    paintGrass(g, seed * 7 + 3);
-    const r = mulberry(seed * 31 + 11);
-    const colors = ["#f5f2ec", "#f2c0d8", "#f0e060", "#b89ae8"];
-    const n = 2 + ((r() * 2) | 0);
-    for (let i = 0; i < n; i++) {
-      const fx = (6 + r() * (TS - 16)) | 0, fy = (6 + r() * (TS - 16)) | 0;
-      g.fillStyle = "#3f7a2e"; g.fillRect(fx + 2, fy + 5, 2, 5);
-      g.fillStyle = colors[(r() * colors.length) | 0];
-      g.fillRect(fx, fy + 2, 2, 2); g.fillRect(fx + 4, fy + 2, 2, 2);
-      g.fillRect(fx + 2, fy, 2, 2); g.fillRect(fx + 2, fy + 4, 2, 2);
-      g.fillStyle = "#f0a83c"; g.fillRect(fx + 2, fy + 2, 2, 2);
-    }
-  }
-
-  function paintWater(g, phase) {
-    const grad = g.createLinearGradient(0, 0, 0, TS);
-    grad.addColorStop(0, "#4a9ad8"); grad.addColorStop(1, "#2f72b8");
-    g.fillStyle = grad; g.fillRect(0, 0, TS, TS);
-    g.fillStyle = "rgba(150,210,240,0.55)";
-    for (let i = 0; i < 3; i++) {
-      const wy = (i * 17 + phase * 4) % TS, wx = (i * 23 + phase * 6) % TS;
-      g.fillRect(wx, wy, 10, 2);
-      g.fillRect((wx + 24) % TS, (wy + 8) % TS, 6, 2);
-    }
-    g.fillStyle = "rgba(255,255,255,0.3)";
-    g.fillRect((phase * 12) % TS, (phase * 7 + 20) % TS, 4, 2);
-  }
+  // decor.png cells (col,row) — mapped with _slicer.html
+  const TUFT_CELLS = [[0, 0], [1, 0], [2, 0]];
+  const SPROUT_CELLS = [[3, 1]];
+  const ROCK_CELL = [1, 2];
+  const FLOWER_CELLS = [[0, 1], [1, 1], [2, 1], [0, 10], [1, 10]];
+  const TALLGRASS_CELLS = [[6, 1], [6, 2]];
 
   function paintWood(g, seed, dark, ox, oy) {
     const r = mulberry(seed * 419 + 13);
@@ -128,36 +150,11 @@
     }
   }
 
-  const GRASS_TILES = Array.from({ length: 8 }, (_, i) => makeCanvas(TS, TS, g => paintGrass(g, i + 1)));
-  const TALL_TILES = Array.from({ length: 4 }, (_, i) => makeCanvas(TS, TS, g => paintTallGrass(g, i + 1)));
-  const FLOWER_TILES = Array.from({ length: 6 }, (_, i) => makeCanvas(TS, TS, g => paintFlower(g, i + 1)));
-  const WATER_CANVASES = Array.from({ length: 4 }, (_, i) => makeCanvas(TS, TS, g => paintWater(g, i)));
-  const WATER_TEX = WATER_CANVASES.map(c => PIXI.Texture.from(c));
-
-  const TREE_CANVAS = makeCanvas(TS, TS * 2, g => {
-    g.fillStyle = "rgba(20,40,10,0.28)";
-    g.beginPath(); g.ellipse(TS / 2, TS * 2 - 7, 19, 6, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#3e2a18"; g.fillRect(TS / 2 - 7, TS + 4, 14, TS - 12);
-    g.fillStyle = "#6b4a2f"; g.fillRect(TS / 2 - 5, TS + 4, 10, TS - 14);
-    g.fillStyle = "#54391f"; g.fillRect(TS / 2 - 5, TS + 4, 4, TS - 14);
-    const cx = 11.5, cy = 10, rx = 11, ry = 9;
-    for (let yy = 0; yy < 22; yy++)
-      for (let xx = 0; xx < 24; xx++) {
-        const jit = (hash(xx * 7 + 13, yy * 11 + 5) - 0.5) * 0.22;
-        const d = Math.hypot((xx - cx) / rx, (yy - cy) / ry) + jit;
-        if (d > 1.04) continue;
-        const light = ((xx - cx) / rx) * 0.35 + ((yy - cy) / ry) * 0.55;
-        const v = d * 0.55 + light * 0.5;
-        let col;
-        if (d > 0.92) col = "#1e4218";
-        else if (v < -0.25) col = "#8cd84e";
-        else if (v < 0) col = "#6cc23e";
-        else if (v < 0.25) col = "#4f9e30";
-        else col = "#356f24";
-        g.fillStyle = col;
-        g.fillRect(xx * 2, yy * 2, 2, 2);
-      }
-  });
+  // animated water detail tiles (water-edges row 5) as PIXI textures
+  const RIPPLE_TEX = [0, 1, 2].map(i => PIXI.Texture.from(makeCanvas(TS, TS, g => {
+    g.imageSmoothingEnabled = false;
+    g.drawImage(IMG.waterEdges, i * T16, 5 * T16, T16, T16, 0, 0, TS, TS);
+  })));
 
   // ════════════════════ static map layers ════════════════════
   function tileAt(x, y) { return G.tileAt(x, y); }
@@ -199,92 +196,118 @@
   }
 
   function buildGround(map, mapName) {
+    return map.theme === "exterior"
+      ? buildExteriorGround(map)
+      : buildInteriorGround(map, mapName);
+  }
+
+  function buildExteriorGround(map) {
     const w = G.mapW * TS, h = G.mapH * TS;
-    const waterCells = [];
-    const foam = makeCanvas(w, h, () => {});
-    const fctx = foam.getContext("2d");
+    const ripples = [];
+    // off-map counts as water so the lake bleeds past the map edge
+    const isWater = (x, y) =>
+      (x < 0 || y < 0 || x >= G.mapW || y >= G.mapH) ? true : map.tiles[y][x] === "w";
+    const isPath = (x, y) => tileAt(x, y) === "p";
+    const isFence = (x, y) => tileAt(x, y) === "F";
     const ground = makeCanvas(w, h, (ctx) => {
+      ctx.imageSmoothingEnabled = false;
       for (let y = 0; y < G.mapH; y++) {
         for (let x = 0; x < G.mapW; x++) {
           const ch = map.tiles[y][x];
           const sx = x * TS, sy = y * TS;
           const hsh = hash(x, y);
 
-          if (ch === "w") {
-            ctx.drawImage(WATER_CANVASES[x % 4], sx, sy);
-            waterCells.push({ x, y });
-            fctx.fillStyle = "rgba(225,242,250,0.6)";
-            if (tileAt(x, y - 1) !== "w") fctx.fillRect(sx, sy, TS, 3);
-            if (tileAt(x - 1, y) !== "w") fctx.fillRect(sx, sy, 3, TS);
-            if (tileAt(x + 1, y) !== "w") fctx.fillRect(sx + TS - 3, sy, 3, TS);
-            if (tileAt(x, y + 1) !== "w") fctx.fillRect(sx, sy + TS - 3, TS, 3);
-            continue;
-          }
-          if ("#KMXV".includes(ch)) { drawWallTile(ctx, ch, sx, sy, mapName); continue; }
-
-          if (ch === "r" || ch === "u" || ch === "k" || (ch === "d" && map.theme !== "exterior")) {
-            paintWood(ctx, ((x * 7 + y * 13) % 4) + 1, map.theme === "dojo" || ch === "k", sx, sy);
-            if (ch === "u") {
-              ctx.fillStyle = "#b8453e";
-              ctx.fillRect(sx, sy, TS, TS);
-              const isU = (xx, yy) => tileAt(xx, yy) === "u";
-              ctx.fillStyle = "#8a2f2a";
-              if (!isU(x, y - 1)) ctx.fillRect(sx, sy, TS, 5);
-              if (!isU(x, y + 1)) ctx.fillRect(sx, sy + TS - 5, TS, 5);
-              if (!isU(x - 1, y)) ctx.fillRect(sx, sy, 5, TS);
-              if (!isU(x + 1, y)) ctx.fillRect(sx + TS - 5, sy, 5, TS);
-              ctx.fillStyle = "#c8645c";
-              if (hash(x * 3, y * 5) < 0.6) ctx.fillRect(sx + 14, sy + 22, 8, 2);
-              if (hash(x * 7, y * 3) < 0.6) ctx.fillRect(sx + 30, sy + 10, 8, 2);
-              ctx.fillStyle = "#e8c858";
-              if (hash(x * 3, y * 5) > 0.7) ctx.fillRect(sx + 22, sy + 16, 4, 4);
-            }
-            if (ch === "d") {
-              ctx.fillStyle = "#6b4a2f"; ctx.fillRect(sx + 2, sy, TS - 4, TS);
-              ctx.fillStyle = "#3a2415"; ctx.fillRect(sx + 6, sy, TS - 12, TS - 4);
-              ctx.fillStyle = "#e8c858"; ctx.fillRect(sx + TS - 14, sy + TS / 2 - 2, 3, 3);
-            }
-            continue;
-          }
-
+          if ("#KMXV".includes(ch)) { drawWallTile(ctx, ch, sx, sy, "exterior"); continue; }
           if (ch === "D") {
-            drawWallTile(ctx, "M", sx, sy, mapName);
+            drawWallTile(ctx, "M", sx, sy, "exterior");
             ctx.fillStyle = "#54391f"; ctx.fillRect(sx + 2, sy, TS - 4, TS);
             ctx.fillStyle = "#3a2415"; ctx.fillRect(sx + 6, sy + 4, TS - 12, TS - 4);
             ctx.fillStyle = "#e8c858"; ctx.fillRect(sx + TS - 14, sy + TS / 2, 3, 3);
             continue;
           }
 
-          ctx.drawImage(GRASS_TILES[(hsh * 8) | 0], sx, sy);
-          if (ch === "f") ctx.drawImage(FLOWER_TILES[(hsh * 6) | 0], sx, sy);
-          if (ch === "h") ctx.drawImage(TALL_TILES[(hsh * 4) | 0], sx, sy);
-
-          if (ch === "p") {
-            const isP = (xx, yy) => tileAt(xx, yy) === "p";
-            const pad = 6;
-            const l = isP(x - 1, y) ? 0 : pad, rr = isP(x + 1, y) ? 0 : pad;
-            const tp = isP(x, y - 1) ? 0 : pad, bt = isP(x, y + 1) ? 0 : pad;
-            ctx.fillStyle = "#a87f3e";
-            ctx.fillRect(sx + Math.max(0, l - 2), sy + Math.max(0, tp - 2),
-              TS - Math.max(0, l - 2) - Math.max(0, rr - 2),
-              TS - Math.max(0, tp - 2) - Math.max(0, bt - 2));
-            ctx.fillStyle = "#d9b35c";
-            ctx.fillRect(sx + l, sy + tp, TS - l - rr, TS - tp - bt);
-            for (let i = 0; i < 5; i++) {
-              const hx = hash(x * 5 + i, y * 9 + i);
-              ctx.fillStyle = hx < 0.5 ? "#c79a4e" : "#ecd084";
-              ctx.fillRect(sx + 6 + ((hx * 631) | 0) % (TS - 16), sy + 6 + ((hx * 277) | 0) % (TS - 16), 2, 2);
-            }
+          ctx.drawImage(IMG.grass, sx, sy, TS, TS);
+          if (ch === "w") {
+            autoTile(ctx, IMG.waterEdges, IMG.water, isWater, x, y, sx, sy);
+            const open = isWater(x - 1, y) && isWater(x + 1, y) && isWater(x, y - 1) && isWater(x, y + 1)
+              && isWater(x - 1, y - 1) && isWater(x + 1, y - 1) && isWater(x - 1, y + 1) && isWater(x + 1, y + 1);
+            if (open && hsh < 0.22) ripples.push({ x, y, kind: ((hsh * 40) | 0) % 3 });
+          } else if (ch === "p") {
+            autoTile(ctx, IMG.pathEdges, IMG.path, isPath, x, y, sx, sy);
+          } else if (ch === "f") {
+            blitCell(ctx, IMG.decor, ...FLOWER_CELLS[(hsh * FLOWER_CELLS.length) | 0], sx, sy);
+          } else if (ch === "h") {
+            blitCell(ctx, IMG.decor, ...TALLGRASS_CELLS[(hsh * 2) | 0], sx, sy);
+          } else if (ch === "F") {
+            blitCell(ctx, IMG.fences,
+              ...fencePiece(isFence(x, y - 1), isFence(x, y + 1), isFence(x - 1, y), isFence(x + 1, y)),
+              sx, sy);
+          } else if (ch === "g") {
+            // sparse decoration keeps plain grass from feeling flat
+            if (hsh < 0.10) blitCell(ctx, IMG.decor, ...TUFT_CELLS[((hsh * 30) | 0) % 3], sx, sy);
+            else if (hsh > 0.985) blitCell(ctx, IMG.decor, ...ROCK_CELL, sx, sy);
+            else if (hsh > 0.97) blitCell(ctx, IMG.decor, ...SPROUT_CELLS[0], sx, sy);
           }
         }
       }
-      // tree pass (canopies overlap the tile above)
+      // forest border: big outlined oaks (4×5 tiles each) every other
+      // 't' cell, drawn top-to-bottom so canopies stack right. Jitter
+      // and random mirroring keep the row from reading as a hedge.
       for (let y = 0; y < G.mapH; y++)
-        for (let x = 0; x < G.mapW; x++)
-          if (map.tiles[y][x] === "t")
-            ctx.drawImage(TREE_CANVAS, x * TS, y * TS - TS);
+        for (let x = 0; x < G.mapW; x++) {
+          if (map.tiles[y][x] !== "t" || (x + y) % 2) continue;
+          const jx = (hash(x * 31, y * 17) - 0.5) * TS * 0.8;
+          const jy = hash(x * 13, y * 29) * TS * 0.7;
+          const flip = hash(x * 7, y * 3) < 0.5;
+          if (y === 0) {
+            // top border: a full tree would show only its trunk, so hang
+            // just the canopy (top of the sprite) over the map edge —
+            // except above the mansion, which sits in its own clearing
+            if (x >= 11 && x <= 25) continue;
+            drawOak(ctx, x * TS + TS / 2 - 84, -66 + jy * 0.5, 168, 168, flip, [4, 0, 56, 56]);
+            continue;
+          }
+          drawOak(ctx, x * TS + TS / 2 - 96 + jx, y * TS + TS - 240 + jy, 192, 240, flip);
+        }
     });
-    return { ground, foam, waterCells };
+    return { ground, ripples };
+  }
+
+  function buildInteriorGround(map, mapName) {
+    const w = G.mapW * TS, h = G.mapH * TS;
+    const ground = makeCanvas(w, h, (ctx) => {
+      for (let y = 0; y < G.mapH; y++) {
+        for (let x = 0; x < G.mapW; x++) {
+          const ch = map.tiles[y][x];
+          const sx = x * TS, sy = y * TS;
+
+          if ("#KMXV".includes(ch)) { drawWallTile(ctx, ch, sx, sy, mapName); continue; }
+
+          paintWood(ctx, ((x * 7 + y * 13) % 4) + 1, map.theme === "dojo" || ch === "k", sx, sy);
+          if (ch === "u") {
+            ctx.fillStyle = "#b8453e";
+            ctx.fillRect(sx, sy, TS, TS);
+            const isU = (xx, yy) => tileAt(xx, yy) === "u";
+            ctx.fillStyle = "#8a2f2a";
+            if (!isU(x, y - 1)) ctx.fillRect(sx, sy, TS, 5);
+            if (!isU(x, y + 1)) ctx.fillRect(sx, sy + TS - 5, TS, 5);
+            if (!isU(x - 1, y)) ctx.fillRect(sx, sy, 5, TS);
+            if (!isU(x + 1, y)) ctx.fillRect(sx + TS - 5, sy, 5, TS);
+            ctx.fillStyle = "#c8645c";
+            if (hash(x * 3, y * 5) < 0.6) ctx.fillRect(sx + 14, sy + 22, 8, 2);
+            if (hash(x * 7, y * 3) < 0.6) ctx.fillRect(sx + 30, sy + 10, 8, 2);
+            ctx.fillStyle = "#e8c858";
+            if (hash(x * 3, y * 5) > 0.7) ctx.fillRect(sx + 22, sy + 16, 4, 4);
+          }
+          if (ch === "d") {
+            ctx.fillStyle = "#6b4a2f"; ctx.fillRect(sx + 2, sy, TS - 4, TS);
+            ctx.fillStyle = "#3a2415"; ctx.fillRect(sx + 6, sy, TS - 12, TS - 4);
+            ctx.fillStyle = "#e8c858"; ctx.fillRect(sx + TS - 14, sy + TS / 2 - 2, 3, 3);
+          }
+        }
+      }
+    });
+    return { ground, ripples: [] };
   }
 
   // ════════════════════ character textures ════════════════════
@@ -387,7 +410,6 @@
   const world = new PIXI.Container();
   const groundSprite = new PIXI.Sprite();
   const waterLayer = new PIXI.Container();
-  const foamSprite = new PIXI.Sprite();
   const glowSprite = new PIXI.Sprite(PIXI.Texture.from(GLOW_CANVAS));
   glowSprite.anchor.set(0.5);
   glowSprite.visible = false;
@@ -395,7 +417,7 @@
   entLayer.sortableChildren = true;
   const fxG = new PIXI.Graphics();
   const labelLayer = new PIXI.Container();
-  world.addChild(groundSprite, waterLayer, foamSprite, glowSprite, entLayer, fxG, labelLayer);
+  world.addChild(groundSprite, waterLayer, glowSprite, entLayer, fxG, labelLayer);
 
   const lightSprite = new PIXI.Sprite();
   const flashG = new PIXI.Graphics();
@@ -411,19 +433,18 @@
 
   // ════════════════════ map / entity sync ════════════════════
   let lastMap = "", lastEntVersion = -1, lastTakenCount = -1;
-  let waterSprites = [], entitySprites = [], labels = [], butterflies = [];
+  let rippleSprites = [], entitySprites = [], labels = [], butterflies = [];
   let runnerC = null;
 
   function rebuildMap() {
     lastMap = G.mapName;
-    const { ground, foam, waterCells } = buildGround(G.map, G.mapName);
+    const { ground, ripples } = buildGround(G.map, G.mapName);
     groundSprite.texture = PIXI.Texture.from(ground);
-    foamSprite.texture = PIXI.Texture.from(foam);
     waterLayer.removeChildren();
-    waterSprites = waterCells.map(({ x, y }) => {
-      const sp = new PIXI.Sprite(WATER_TEX[x % 4]);
+    rippleSprites = ripples.map(({ x, y, kind }) => {
+      const sp = new PIXI.Sprite(RIPPLE_TEX[kind]);
       sp.position.set(x * TS, y * TS);
-      sp._wx = x;
+      sp._ph = hash(x, y) * Math.PI * 2;
       waterLayer.addChild(sp);
       return sp;
     });
@@ -548,9 +569,8 @@
     }
     world.position.set(Math.round(-camX + jx), Math.round(-camY + jy));
 
-    // water animation
-    const wf = ((G.tick / 16) | 0);
-    for (const sp of waterSprites) sp.texture = WATER_TEX[(wf + sp._wx) % 4];
+    // water animation: detail ripples slowly fade in and out
+    for (const sp of rippleSprites) sp.alpha = 0.45 + Math.sin(G.tick / 50 + sp._ph) * 0.35;
 
     // entities
     for (const { e, c } of entitySprites) {

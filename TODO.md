@@ -21,11 +21,15 @@ all free for non-commercial use, NOT redistributable — gitignored):
 - Sprout Lands (Cup Nooble) — benched (pastel palette mismatch)
 
 ### Steps (each ends playable, Luke reviews at every checkpoint)
-- [ ] 1. **PixiJS renderer swap** — vendor pixi.min.js, split engine into
+- [x] 1. **PixiJS renderer swap** — vendor pixi.min.js, split engine into
       logic (engine.js) + rendering (render.js). Game looks IDENTICAL
       after this step; it's the GPU foundation everything else stands on.
-- [ ] 2. **Exterior rebuild** — grounds re-laid with Cute Fantasy tiles:
-      real grass, water with animated edges, cliffs, oak trees, fences
+- [x] 2. **Exterior rebuild** — grounds re-laid with Cute Fantasy tiles:
+      autotiled water + path shorelines, oak forest border, fenced
+      flower garden, decor scatter, animated water ripples.
+      OPEN DECISION (Luke): the free pack has no cliff-to-water art, so
+      the portal sits on a grass point, not a cliff. Option: a wooden
+      dock from Bridge_Wood.png (would mean tweaking "cliff" dialogue).
 - [ ] 3. **Mansion facade** — proper two-story build (Cozy RPG kit)
 - [ ] 4. **Interior rebuild** — hallway + 5 rooms with LimeZu floors,
       walls, real furniture (Dad's couch! Henry's battlestation!)
