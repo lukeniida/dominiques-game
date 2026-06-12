@@ -330,5 +330,5 @@
     const [ax, ay] = params.get("at").split(",").map(Number);
     if (!isNaN(ax) && !isNaN(ay)) { sx = ax; sy = ay; }
   }
-  loadMap(startMap, sx, sy, ps.facing);
+  loadMap(startMap, sx, sy, params.get("face") || ps.facing); // dev: &face=down|up|left|right
 })();

@@ -52,6 +52,100 @@
     i.src = "assets/" + file;
   })));
 
+  // ════════════════════ family characters (layered) ════════════════════
+  // Each family member = Cute Fantasy player layers stacked on one
+  // canvas (rows 0-5 only: idle + walk), plus hand-pixeled "deco"
+  // stamps for the likeness details. Textures are sliced per
+  // (row, frame) at 3× like everything else.
+  const FAM_IMG = {};
+  {
+    const wanted = new Set();
+    for (const name in FAMILY) FAMILY[name].layers.forEach(l => wanted.add(l));
+    await Promise.all([...wanted].map(l => new Promise((res, rej) => {
+      const i = new Image();
+      i.onload = () => res(FAM_IMG[l] = i);
+      i.onerror = () => rej(new Error("missing assets/family/" + l + ".png — run scripts/restore-assets.sh"));
+      i.src = "assets/family/" + l + ".png";
+    })));
+  }
+
+  // Per-frame head bob: the body rises/dips a pixel through the
+  // cycle, and deco stamps have to ride along or they'd float.
+  // Measured from the base layer: top-most opaque pixel per frame,
+  // relative to that row's first frame.
+  function famBobs(baseImg) {
+    const c = makeCanvas(FAM_CELL * FAM_FRAMES, FAM_CELL * 6, g =>
+      g.drawImage(baseImg, 0, 0, FAM_CELL * FAM_FRAMES, FAM_CELL * 6, 0, 0, FAM_CELL * FAM_FRAMES, FAM_CELL * 6));
+    const data = c.getContext("2d").getImageData(0, 0, c.width, c.height).data;
+    const topOf = (row, f) => {
+      for (let y = row * FAM_CELL; y < (row + 1) * FAM_CELL; y++)
+        for (let x = f * FAM_CELL; x < (f + 1) * FAM_CELL; x++)
+          if (data[(y * c.width + x) * 4 + 3] > 60) return y;
+      return row * FAM_CELL;
+    };
+    const bobs = [];
+    for (let row = 0; row < 6; row++) {
+      const t0 = topOf(row, 0);
+      bobs.push(Array.from({ length: FAM_FRAMES }, (_, f) => topOf(row, f) - t0));
+    }
+    return bobs;
+  }
+  const FAM_BOBS = famBobs(FAM_IMG.base);
+
+  // Feet line (for bottom-anchoring): lowest opaque pixel of the
+  // base's idle-down frame, inside its 64px cell.
+  const FAM_FEET = (() => {
+    const c = makeCanvas(FAM_CELL, FAM_CELL, g =>
+      g.drawImage(FAM_IMG.base, 0, 0, FAM_CELL, FAM_CELL, 0, 0, FAM_CELL, FAM_CELL));
+    const data = c.getContext("2d").getImageData(0, 0, FAM_CELL, FAM_CELL).data;
+    for (let y = FAM_CELL - 1; y >= 0; y--)
+      for (let x = 0; x < FAM_CELL; x++)
+        if (data[(y * FAM_CELL + x) * 4 + 3] > 60) return y + 1;
+    return FAM_CELL;
+  })();
+
+  const famCache = {};
+  function famSheet(name) {
+    if (famCache[name]) return famCache[name];
+    const r = FAMILY[name];
+    // raw-pixel composite of rows 0-5
+    const raw = makeCanvas(FAM_CELL * FAM_FRAMES, FAM_CELL * 6, (g) => {
+      for (const l of r.layers)
+        g.drawImage(FAM_IMG[l], 0, 0, FAM_CELL * FAM_FRAMES, FAM_CELL * 6, 0, 0, FAM_CELL * FAM_FRAMES, FAM_CELL * 6);
+      if (!r.deco) return;
+      const decoFor = { 0: "down", 1: "side", 2: "up", 3: "down", 4: "side", 5: "up" };
+      for (let row = 0; row < 6; row++)
+        for (const d of r.deco[decoFor[row]] || [])
+          for (let f = 0; f < FAM_FRAMES; f++) {
+            g.fillStyle = d.color;
+            g.fillRect(f * FAM_CELL + d.x, row * FAM_CELL + d.y + FAM_BOBS[row][f], d.w, d.h);
+          }
+    });
+    // upscale once, slice 36 textures
+    const big = makeCanvas(raw.width * SCALE, raw.height * SCALE, (g) => {
+      g.imageSmoothingEnabled = false;
+      g.drawImage(raw, 0, 0, raw.width * SCALE, raw.height * SCALE);
+    });
+    const texs = [];
+    for (let row = 0; row < 6; row++) {
+      texs.push([]);
+      for (let f = 0; f < FAM_FRAMES; f++)
+        texs[row].push(new PIXI.Texture({
+          source: PIXI.Texture.from(big).source,
+          frame: new PIXI.Rectangle(f * FAM_CELL * SCALE, row * FAM_CELL * SCALE, FAM_CELL * SCALE, FAM_CELL * SCALE),
+        }));
+    }
+    return famCache[name] = texs;
+  }
+
+  // dir + walking → texture. Side art faces LEFT; caller mirrors for right.
+  function famTex(name, dir, moving) {
+    const rows = moving ? FAM_ROWS.walk : FAM_ROWS.idle;
+    const row = rows[dir === "left" || dir === "right" ? "side" : dir] ?? rows.down;
+    const speed = moving ? 5 : 10;
+    return famSheet(name)[row][((G.tick / speed) | 0) % FAM_FRAMES];
+  }
+
   // The edge sheets (water-edges, path-edges) are "blob" tilesets:
   // rows 0-2 are a 3×3 pool — corners, edges, and pure middle — and
   // rows 3-4 hold the four inner-corner pieces (grass poking into a
@@ -455,6 +549,15 @@
       return c;
     }
     const c = new PIXI.Container();
+    if (FAMILY[spriteName]) {
+      // layered sheet character: pack art has its own baked shadow
+      const body = new PIXI.Sprite(famTex(spriteName, "down", false));
+      body.anchor.set(0.5, FAM_FEET / FAM_CELL);
+      c.addChild(body);
+      c._body = body;
+      c._fam = spriteName;
+      return c;
+    }
     if (withShadow !== false) {
       const grid = SPRITES[spriteName].down;
       const wPx = grid[0].length * SCALE;
@@ -712,7 +815,7 @@
       entLayer.addChild(c);
       entitySprites.push({ e, c });
       if (e.label) {
-        const grid = SPRITES[e.sprite].down;
+        const grid = FAMILY[e.sprite] ? { length: 24 } : SPRITES[e.sprite].down;
         const t = new PIXI.Text({
           text: e.name,
           style: {
@@ -840,7 +943,13 @@
 
     // entities (furniture sprites keep their sheet texture)
     for (const { e, c } of entitySprites) {
-      if (!c._furn) c._body.texture = charTex(e.sprite, e.dir || "down", 0);
+      if (c._fam) {
+        const dir = e.dir || "down";
+        c._body.texture = famTex(c._fam, dir, !!e.moving);
+        c._body.scale.x = dir === "right" ? -1 : 1; // side art faces left
+      } else if (!c._furn) {
+        c._body.texture = charTex(e.sprite, e.dir || "down", 0);
+      }
       placeChar(c, e.px, e.py);
     }
     for (const { e, t, hPx } of labels) {
@@ -848,9 +957,13 @@
     }
 
     // player
-    const mirror = p.facing === "left";
-    playerC._body.texture = charTex("dominique", p.facing, p.moving ? p.step : 0);
-    playerC._body.scale.x = mirror ? -1 : 1;
+    if (playerC._fam) {
+      playerC._body.texture = famTex("dominique", p.facing, p.moving);
+      playerC._body.scale.x = p.facing === "right" ? -1 : 1; // side art faces left
+    } else {
+      playerC._body.texture = charTex("dominique", p.facing, p.moving ? p.step : 0);
+      playerC._body.scale.x = p.facing === "left" ? -1 : 1;
+    }
     placeChar(playerC, p.px, p.py);
     lumpyMini.visible = p.hasLumpy && p.facing !== "up";
 

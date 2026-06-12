@@ -55,6 +55,24 @@ cp "$P/Tiles/Grass/Path_Decoration.png" assets/exterior/path-decor.png
 # ── ambient life ──
 cp "$P/Animals/Butterfly/Butterfly.png" assets/exterior/butterfly.png
 
+# ── family character layers (Cute Fantasy premium player system) ──
+PL="$P/Player"
+mkdir -p assets/family
+cp "$PL/Player_Base/Player_Base_animations.png" assets/family/base.png
+cp "$PL/Head/Hair_1/Hair_1_Grey.png"   assets/family/hair1-grey.png
+cp "$PL/Head/Hair_1/Hair_1_Black.png"  assets/family/hair1-black.png
+cp "$PL/Head/Hair_2/Hair_2_Brown.png"  assets/family/hair2-brown.png
+cp "$PL/Head/Hair_3/Hair_3_Black.png"  assets/family/hair3-black.png
+cp "$PL/Head/Hair_4/Hair_4_Brown.png"  assets/family/hair4-brown.png
+cp "$PL/Head/Hair_6/Hair_6_Blonde.png" assets/family/hair6-blonde.png
+cp "$PL/Chest/OG_Shirt/Shirt_1_Black.png" assets/family/shirt-black.png
+cp "$PL/Chest/OG_Shirt/Shirt_1_Blue.png"  assets/family/shirt-blue.png
+cp "$PL/Chest/Royal_Shirt/Royal_Shirt_1_Blue.png" assets/family/royal-blue.png
+cp "$PL/Legs/OG_Pants/Pants_1_Black.png" assets/family/pants-black.png
+cp "$PL/Legs/OG_Pants/Pants_1_Brown.png" assets/family/pants-brown.png
+cp "$PL/Feet/Shoes_1_Black.png" assets/family/shoes-black.png
+cp "$PL/Feet/Shoes_1_Brown.png" assets/family/shoes-brown.png
+
 # ── interiors (LimeZu Modern Interiors free) ──
 MI="asset-candidates/modern-interiors/Modern tiles_Free/Interiors_free/16x16"
 mkdir -p assets/interior
