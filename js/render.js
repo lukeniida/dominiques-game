@@ -338,7 +338,10 @@
             // wall cell gets the baseboard course so side and bottom
             // walls read as solid paneling
             blitCell(ctx, IMG.roomBuilder, x % 3, style.wallRow + (y === 0 ? 0 : 1), sx, sy);
-            if (ch === "X") blitCell(ctx, IMG.furniture, 9, 24, sx, sy); // window on the wall
+            if (ch === "X") {
+              // full 1×2 window spanning both wall courses
+              ctx.drawImage(IMG.furniture, 9 * T16, 24 * T16, T16, 2 * T16, sx, sy - TS, TS, TS * 2);
+            }
             continue;
           }
 
@@ -724,7 +727,8 @@
       }
       if (e.glow) {
         glowSprite.visible = true;
-        glowSprite.position.set(e.px + TS / 2, e.py + TS / 2 - 10);
+        glowSprite.scale.set(e.big || 1);
+        glowSprite.position.set(e.px + TS / 2, e.py + TS / 2 - 10 - (e.big ? 28 : 0));
       }
     }
     entLayer.addChild(playerC);

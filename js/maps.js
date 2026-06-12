@@ -112,14 +112,14 @@ const MAPS = {
         ],
       },
       {
-        x: 28, y: 16, sprite: "towel", name: "Luke's Towel",
+        x: 28, y: 16, sprite: "towel", name: "Luke's Towel", big: 2,
         lines: [
           "Luke's sunbathing towel. Still warm.",
           "He was here a second ago. He is also\nat the front path. Don't think about it.",
         ],
       },
       {
-        x: 33, y: 19, sprite: "portal", name: "The Portal", portal: true, glow: true,
+        x: 33, y: 19, sprite: "portal", name: "The Portal", portal: true, glow: true, big: 2.5,
       },
     ],
   },
