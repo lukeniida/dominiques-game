@@ -31,8 +31,8 @@ const MAPS = {
       "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
       "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
       "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
-      "tggggggggggBBBBBBBBBBBBBBBgggggwwwww",
-      "tggggggggggggggggDDggggggggggggwwwww",
+      "tggggggggggBBBBBBDDBBBBBBBgggggwwwww",
+      "tggggggggggggggggppggggggggggggwwwww",
       "tggggggggggggggggppggggggggggggwwwww",
       "tgggggfggggggggggppggghhgggggggwwwww",
       "tggggggggggggggggppggggggggggggwwwww",
@@ -51,8 +51,8 @@ const MAPS = {
       "tttttttttttttttttttttttttttttttwwwww",
     ],
     warps: [
-      { x: 17, y: 14, to: "hallway", tx: 10, ty: 10, facing: "up" },
-      { x: 18, y: 14, to: "hallway", tx: 11, ty: 10, facing: "up" },
+      { x: 17, y: 13, to: "hallway", tx: 10, ty: 10, facing: "up" },
+      { x: 18, y: 13, to: "hallway", tx: 11, ty: 10, facing: "up" },
     ],
     entities: [
       {
@@ -148,8 +148,8 @@ const MAPS = {
       { x: 12, y: 0, to: "dadroom", tx: 7, ty: 9, facing: "up" },
       { x: 16, y: 0, to: "henryroom", tx: 7, ty: 9, facing: "up" },
       { x: 21, y: 5, to: "closet", tx: 1, ty: 4, facing: "right" },
-      { x: 10, y: 11, to: "exterior", tx: 17, ty: 15, facing: "down" },
-      { x: 11, y: 11, to: "exterior", tx: 18, ty: 15, facing: "down" },
+      { x: 10, y: 11, to: "exterior", tx: 17, ty: 14, facing: "down" },
+      { x: 11, y: 11, to: "exterior", tx: 18, ty: 14, facing: "down" },
     ],
     entities: [
       {
