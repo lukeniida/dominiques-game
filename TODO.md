@@ -45,8 +45,13 @@ NOT redistributable — gitignored):
       terrarium, red lamp, wardrobe, rug, doors, windows). The
       personality props (altar, katanas, espresso, kintsugi heart,
       dad-on-couch…) stay hand-drawn on purpose — they're the jokes.
-- [ ] 5. **Family sprites v2** — custom heads/hair/outfits on LimeZu
-      animated bases: walk cycles + likenesses. Luke approves each.
+- [~] 5. **Family sprites v2** — DECISION (June 12): built on the Cute
+      Fantasy premium layered player system (base + hair + clothes
+      sheets), NOT LimeZu — perfect style match, real 6-frame walk +
+      idle cycles. Likeness details are hand-pixeled "deco" stamps in
+      js/family.js. Dominique DONE (hair 4 brown, black outfit, green
+      TCOM gown panel). Remaining: Luke, Mom, Dad, Henry, Ruthvik —
+      Luke approves each.
 - [x] 6. **Light & shader pass** (first cut) — per-theme color grading,
       additive light sources (candle flicker, battlestation glow, red
       lamp, terrarium heat lamp, window pools), dust motes. Remaining
