@@ -100,7 +100,7 @@ const MAPS = {
         ],
       },
       {
-        x: 25, y: 27, sprite: "pbtable", name: "Roped-Off Table", gag: "pb",
+        x: 20, y: 15, sprite: "pbtable", name: "Roped-Off Table", gag: "pb", big: 2,
         lines: [
           "A picnic table behind a velvet rope.\nOn it: a single jar of peanut butter.",
           "A sign reads: 'DO NOT LOOK AT THE\nPEANUT BUTTER.'",

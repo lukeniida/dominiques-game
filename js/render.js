@@ -946,7 +946,7 @@
       if (c._fam) {
         const dir = e.dir || "down";
         c._body.texture = famTex(c._fam, dir, !!e.moving);
-        c._body.scale.x = dir === "right" ? -1 : 1; // side art faces left
+        c._body.scale.x = dir === "left" ? -1 : 1; // side art faces right
       } else if (!c._furn) {
         c._body.texture = charTex(e.sprite, e.dir || "down", 0);
       }
@@ -959,7 +959,7 @@
     // player
     if (playerC._fam) {
       playerC._body.texture = famTex("dominique", p.facing, p.moving);
-      playerC._body.scale.x = p.facing === "right" ? -1 : 1; // side art faces left
+      playerC._body.scale.x = p.facing === "left" ? -1 : 1; // side art faces right
     } else {
       playerC._body.texture = charTex("dominique", p.facing, p.moving ? p.step : 0);
       playerC._body.scale.x = p.facing === "left" ? -1 : 1;
