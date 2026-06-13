@@ -41,8 +41,9 @@ Before Luke leaves a session, do a walkthrough covering:
   NEXT: Step 5, family sprites v2 (LimeZu animated character bases +
   likenesses, Luke approves each). Open decisions for Luke: dock vs
   grass point at the portal; bloom/dusk mode as extra light polish.
-- GitHub: private repo lukeiida/dominiques-game, all work pushed
-- Vercel: deliberately NOT deployed yet — Luke will say when
+- GitHub: repo is lukeniida/dominiques-game (lukeniida@gmail.com account)
+- Vercel: live at https://dominiques-game.vercel.app (otherotter account)
+  Deploy command: `cd ~/Projects/dominiques-game && vercel --prod --yes --scope otherotter`
 
 ## Key decisions on record
 - Scope: mansion-only for v1/v2 (graduation area is v3 backlog)
@@ -70,3 +71,4 @@ Before Luke leaves a session, do a walkthrough covering:
   "http://localhost:4173/?skiptitle&quiet&at=17,9"`
 - Inspect asset sheet tile coords: `_slicer.html?img=assets/exterior/<file>.png`
   (draws a labeled 16px grid over any sheet)
+- Dev facing param: `&face=down|up|left|right` spawns player facing a direction
