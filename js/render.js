@@ -468,7 +468,7 @@
     coatrack:     { r: [2, 21, 2, 2] },
     bed:          { r: [13, 0, 2, 3] },
     portrait:     { r: [10, 26, 1, 1], dy: -26 },
-    plant:        { r: [10, 44, 1, 2] },
+    plant:        { r: [11, 44, 1, 2] },
   };
   const furnTexCache = {};
   function furnTex(name) {
